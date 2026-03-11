@@ -102,7 +102,13 @@
     margin-bottom: 36px;
     border-bottom: 1px solid var(--border);
     padding-bottom: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
   }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab-btn {
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
@@ -139,10 +145,13 @@
     align-items: center;
     gap: 14px;
     animation: fadeUp 0.4s ease both;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     position: relative;
   }
   .player-card:hover { border-color: rgba(255,107,53,0.3); }
+  .player-card.rank-gold   { border-color: rgba(255,215,0,0.35);   box-shadow: 0 0 12px rgba(255,215,0,0.12); }
+  .player-card.rank-silver { border-color: rgba(192,192,192,0.35); box-shadow: 0 0 12px rgba(192,192,192,0.1); }
+  .player-card.rank-bronze { border-color: rgba(205,127,50,0.35);  box-shadow: 0 0 12px rgba(205,127,50,0.1); }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -156,11 +165,13 @@
     width: 36px;
     text-align: center;
     flex-shrink: 0;
+    color: var(--text);
+    position: relative;
   }
-  .rank-1 { color: #ffd700; }
-  .rank-2 { color: #c0c0c0; }
-  .rank-3 { color: #cd7f32; }
-  .rank-other { color: var(--muted); }
+
+  .player-card.rank-gold   { border-color: rgba(255,215,0,0.7);   box-shadow: 0 0 16px rgba(255,215,0,0.2),   inset 0 0 20px rgba(255,215,0,0.04); }
+  .player-card.rank-silver { border-color: rgba(192,192,192,0.7); box-shadow: 0 0 16px rgba(192,192,192,0.15), inset 0 0 20px rgba(192,192,192,0.04); }
+  .player-card.rank-bronze { border-color: rgba(205,127,50,0.7);  box-shadow: 0 0 16px rgba(205,127,50,0.18), inset 0 0 20px rgba(205,127,50,0.04); }
 
   .player-swatch {
     width: 12px; height: 40px;
@@ -732,7 +743,13 @@ function renderApp(data) {
     btn.onclick = () => switchTab(t.id);
     tabsEl.appendChild(btn);
   });
-  main.appendChild(tabsEl);
+  // Prevent tab bar touch events from scrolling the page body
+  tabsEl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+  tabsEl.addEventListener('touchmove',  e => e.stopPropagation(), { passive: true });
+  const tabsOuter = document.createElement('div');
+  tabsOuter.className = 'tabs-outer';
+  tabsOuter.appendChild(tabsEl);
+  main.appendChild(tabsOuter);
 
   const panels = {};
 
@@ -756,14 +773,15 @@ function renderApp(data) {
       const card = document.createElement('div');
       card.className = 'player-card';
       card.style.animationDelay = (i * 0.06) + 's';
-      const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+      const rankGlow = i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : '';
+      if (rankGlow) card.classList.add(rankGlow);
       const pts = scoreMap[p.player] || 0;
       const subtitle = isCombined
         ? `<div class="player-teams"><span style="color:var(--mens)">${scoresM[p.player]||0}M</span> + <span style="color:var(--womens)">${scoresW[p.player]||0}W</span></div>`
         : '';
 
       card.innerHTML = `
-        <div class="rank-badge ${rankClass}">${i + 1}</div>
+        <div class="rank-badge">${i + 1}</div>
         <div class="player-swatch" style="background:${p.color}"></div>
         <div class="player-info">
           <div class="player-name">${p.player}</div>
