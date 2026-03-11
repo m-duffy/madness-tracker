@@ -706,7 +706,6 @@ function renderApp(data) {
   const { players, teams, results, bracket } = data;
   const { scores, scoresM, scoresW, teamWins } = computeScores(players, teams, results);
 
-  const sorted  = [...players].sort((a, b) => (scores[b.player]  || 0) - (scores[a.player]  || 0));
   const sortedM = [...players].sort((a, b) => (scoresM[b.player] || 0) - (scoresM[a.player] || 0));
   const sortedW = [...players].sort((a, b) => (scoresW[b.player] || 0) - (scoresW[a.player] || 0));
 
@@ -827,10 +826,7 @@ function renderApp(data) {
   lbPanel.appendChild(wTitle);
   lbPanel.appendChild(wGrid);
 
-  const { titleEl: cTitle, grid: cGrid } = makeLeaderboardGrid(sorted, scores, "Combined Total", '');
-  cTitle.style.marginTop = '36px';
-  lbPanel.appendChild(cTitle);
-  lbPanel.appendChild(cGrid);
+
 
   panels['leaderboard'] = lbPanel;
   main.appendChild(lbPanel);
@@ -853,35 +849,60 @@ function renderApp(data) {
   const rostersPanel = document.createElement('div');
   rostersPanel.id = 'panel-rosters';
   rostersPanel.style.display = 'none';
-  ['mens','womens'].forEach(tourn => {
-    const sec = document.createElement('div');
-    sec.className = 'roster-section';
-    const title = document.createElement('div');
-    title.className = 'section-title';
-    title.style.color = tourn === 'mens' ? 'var(--mens)' : 'var(--womens)';
-    title.textContent = tourn === 'mens' ? "Men's Tournament" : "Women's Tournament";
-    sec.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'roster-grid';
-    [...players].sort((a,b) => (tourn === 'mens' ? scoresM : scoresW)[b.player] - (tourn === 'mens' ? scoresM : scoresW)[a.player]).forEach(p => {
-      const pTeams = teams.filter(t => t.player === p.player && t.tournament === tourn);
-      if (!pTeams.length) return;
-      const card = document.createElement('div');
-      card.className = 'roster-player';
-      const pts = tourn === 'mens' ? scoresM[p.player] || 0 : scoresW[p.player] || 0;
-      card.innerHTML = `<div class="roster-player-name"><span class="dot" style="background:${p.color}"></span>${p.player}<span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--accent2)">${pts}pts</span></div>`;
-      pTeams.forEach(t => {
-        const wins = teamWins[t.team + '|' + tourn] || 0;
-        const row = document.createElement('div');
-        row.className = 'roster-team';
-        row.innerHTML = `<span>${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
-        card.appendChild(row);
-      });
-      grid.appendChild(card);
+
+  const rosterGrid = document.createElement('div');
+  rosterGrid.className = 'roster-grid';
+
+  // Sort players alphabetically
+  [...players].sort((a, b) => a.player.localeCompare(b.player)).forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'roster-player';
+
+    // Header with name and total points breakdown
+    const header = document.createElement('div');
+    header.className = 'roster-player-name';
+    header.innerHTML = `
+      <span class="dot" style="background:${p.color}"></span>
+      <span>${p.player}</span>
+      <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.68rem">
+        <span style="color:var(--mens)">${scoresM[p.player]||0} pts</span>
+        <span style="color:var(--muted)"> | </span>
+        <span style="color:var(--womens)">${scoresW[p.player]||0} pts</span>
+      </span>`;
+    card.appendChild(header);
+
+    // Mens section
+    const mensLabel = document.createElement('div');
+    mensLabel.style.cssText = 'font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mens);padding:6px 0 2px;font-family:"DM Mono",monospace;';
+    mensLabel.textContent = "Men's";
+    card.appendChild(mensLabel);
+
+    teams.filter(t => t.player === p.player && t.tournament === 'mens').forEach(t => {
+      const wins = teamWins[t.team + '|mens'] || 0;
+      const row = document.createElement('div');
+      row.className = 'roster-team';
+      row.innerHTML = `<span>${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
+      card.appendChild(row);
     });
-    sec.appendChild(grid);
-    rostersPanel.appendChild(sec);
+
+    // Womens section
+    const womensLabel = document.createElement('div');
+    womensLabel.style.cssText = 'font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--womens);padding:6px 0 2px;font-family:"DM Mono",monospace;';
+    womensLabel.textContent = "Women's";
+    card.appendChild(womensLabel);
+
+    teams.filter(t => t.player === p.player && t.tournament === 'womens').forEach(t => {
+      const wins = teamWins[t.team + '|womens'] || 0;
+      const row = document.createElement('div');
+      row.className = 'roster-team';
+      row.innerHTML = `<span>${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
+      card.appendChild(row);
+    });
+
+    rosterGrid.appendChild(card);
   });
+
+  rostersPanel.appendChild(rosterGrid);
   panels['rosters'] = rostersPanel;
   main.appendChild(rostersPanel);
 
@@ -1033,7 +1054,7 @@ function showConfigPanel() {
     <p>Enter your Google Sheet ID and API key to connect your bracket data. These are saved locally in your browser.</p>
     <div class="config-field">
       <label>Google Sheet ID</label>
-      <input id="cfgSheetId" type="text" placeholder="1OD59Z4PeaG3Nf6X720Kk00DMvcqqxGbeTibv4nLZg6U" value="${CONFIG.SHEET_ID !== 'YOUR_SHEET_ID_HERE' ? CONFIG.SHEET_ID : ''}">
+      <input id="cfgSheetId" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" value="${CONFIG.SHEET_ID !== 'YOUR_SHEET_ID_HERE' ? CONFIG.SHEET_ID : ''}">
     </div>
     <div class="config-field">
       <label>API Key</label>
