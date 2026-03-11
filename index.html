@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>March Madness Draft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3a;
+    --text: #f0f0f8;
+    --muted: #6b6b88;
+    --accent: #ff6b35;
+    --accent2: #4ecdc4;
+    --mens: #3a7bd5;
+    --womens: #e040a0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(58,123,213,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(224,64,160,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 24px;
+    margin-bottom: 40px;
+  }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  .logo {
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .logo h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9a5c 50%, #ffd166 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo .year {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .last-updated {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── LOADING / ERROR ── */
+  .status-msg {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+    font-size: 1rem;
+  }
+  .status-msg .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── LEADERBOARD ── */
+  .leaderboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+
+  .player-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.4s ease both;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .player-card:hover { border-color: rgba(255,107,53,0.3); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .rank-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    line-height: 1;
+    width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .rank-1 { color: #ffd700; }
+  .rank-2 { color: #c0c0c0; }
+  .rank-3 { color: #cd7f32; }
+  .rank-other { color: var(--muted); }
+
+  .player-swatch {
+    width: 12px; height: 40px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .player-info { flex: 1; min-width: 0; }
+  .player-name {
+    font-weight: 600;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .player-teams {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .player-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    line-height: 1;
+    text-align: right;
+  }
+  .player-score .pts-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    display: block;
+    text-align: right;
+  }
+
+  /* ── POPOVER ── */
+  .popover-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+  .info-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s, color 0.2s;
+    font-family: serif;
+    font-style: italic;
+    font-weight: bold;
+    line-height: 1;
+  }
+  .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .popover {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: #1c1c28;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    min-width: 200px;
+    max-width: 240px;
+    z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    display: none;
+    animation: popIn 0.15s ease;
+  }
+  .popover.open { display: block; }
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .popover-player {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .popover-player-name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    flex: 1;
+  }
+  .popover-tourn-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 0 2px;
+  }
+  .popover-team-row {
+    font-size: 0.73rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .popover-team-row:last-child { border-bottom: none; }
+  .popover-team-row .wins { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 0.67rem; }
+
+  /* ── ROSTER TABLE ── */
+  .roster-section { margin-bottom: 48px; }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .roster-player {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .roster-player-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .roster-player-name .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .roster-team {
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .roster-team:last-child { border-bottom: none; }
+  .team-wins {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent2);
+  }
+
+  /* ── BRACKET ── */
+  .bracket-container {
+    overflow-x: auto;
+    padding-bottom: 20px;
+    margin-bottom: 48px;
+  }
+  .bracket-tournament-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .bracket-tournament-label.mens { color: var(--mens); }
+  .bracket-tournament-label.womens { color: var(--womens); }
+
+  .bracket-full {
+    display: flex;
+    align-items: stretch;
+    min-width: 1300px;
+  }
+  .bracket-half {
+    display: flex;
+    flex: 1;
+  }
+  .bracket-half.right {
+    flex-direction: row-reverse;
+  }
+  .bracket-headers {
+    display: flex;
+    min-width: 1300px;
+    margin-bottom: 4px;
+  }
+  .bracket-headers .half-headers {
+    display: flex;
+    flex: 1;
+  }
+  .bracket-headers .half-headers.right { flex-direction: row-reverse; }
+  .bracket-headers .champ-header { width: 110px; flex-shrink: 0; }
+  .round-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    flex: 1;
+    padding: 0 2px;
+  }
+  .bracket-round {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .bracket-slots {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex: 1;
+    padding: 0 2px;
+  }
+  .bracket-half.right .team-slot.has-owner {
+    border-left-width: 1px;
+    border-right-width: 3px;
+  }
+  .matchup {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    position: relative;
+  }
+  .matchup::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 28%;
+    height: 44%;
+    width: 2px;
+    background: var(--border);
+  }
+  .bracket-half.right .matchup::after {
+    right: auto;
+    left: -2px;
+  }
+  .bracket-champ {
+    width: 110px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    padding: 0 6px;
+    gap: 3px;
+  }
+  .champ-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .team-slot {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 0.2s;
+    cursor: default;
+  }
+  .team-slot.has-owner {
+    border-left-width: 3px;
+  }
+  .team-slot.winner {
+    background: var(--surface);
+    font-weight: 600;
+  }
+  .team-slot.eliminated {
+    opacity: 0.38;
+  }
+  .team-slot .seed {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    min-width: 14px;
+    flex-shrink: 0;
+  }
+  .team-slot .tname { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .team-slot.empty { background: transparent; border-color: transparent; opacity: 0.3; }
+
+  /* ── TOOLTIP ── */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222233;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 100;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .config-panel { padding: 20px; }
+    .leaderboard { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">
+      <h1>March Madness Draft</h1>
+      <span class="year" id="yearLabel"></span>
+    </div>
+    <div class="last-updated" id="lastUpdated"></div>
+  </div>
+</header>
+
+<div class="wrap" id="mainContent">
+  <div class="status-msg" id="loadingMsg">
+    <div class="spinner"></div>
+    Loading bracket data…
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONFIG — edit these two values
+// ═══════════════════════════════════════════
+const CONFIG = {
+  SHEET_ID:  localStorage.getItem('mm_sheet_id')  || 'YOUR_SHEET_ID_HERE',
+  API_KEY:   localStorage.getItem('mm_api_key')   || 'YOUR_API_KEY_HERE',
+};
+
+// Round names
+const ROUND_NAMES = ['Round of 64','Round of 32','Sweet 16','Elite Eight','Final Four','Championship'];
+// Points per round: round index 0-5 → 3,4,5,6,7,8
+const roundPoints = r => r + 3;
+
+// ═══════════════════════════════════════════
+//  SHEETS API HELPER
+// ═══════════════════════════════════════════
+async function fetchRange(range) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(range)}?key=${CONFIG.API_KEY}`;
+  const r = await fetch(url);
+  const text = await r.text();
+  if (!r.ok) {
+    let msg = `HTTP ${r.status}`;
+    try {
+      const j = JSON.parse(text);
+      msg = j?.error?.message || msg;
+    } catch {}
+    if (r.status === 400) throw new Error(`Bad request — double-check your Sheet ID.\n${msg}`);
+    if (r.status === 403) throw new Error(`Access denied — make sure the sheet is shared as "Anyone with link" and the API key has Sheets API enabled.\n${msg}`);
+    if (r.status === 404) throw new Error(`Sheet not found — the tab "${range.split('!')[0]}" may not exist yet.\n${msg}`);
+    throw new Error(`Sheets API error for "${range}": ${msg}`);
+  }
+  const d = JSON.parse(text);
+  return d.values || [];
+}
+
+async function diagnose() {
+  const results = [];
+  const tabs = [
+    { range: 'players!A:B',    desc: 'players tab' },
+    { range: 'teams_m!A:C',    desc: 'teams_m tab' },
+    { range: 'teams_w!A:C',    desc: 'teams_w tab' },
+    { range: 'results_m!A:G',  desc: 'results_m tab' },
+    { range: 'results_w!A:G',  desc: 'results_w tab' },
+    { range: 'bracket_m!A:D',  desc: 'bracket_m tab' },
+    { range: 'bracket_w!A:D',  desc: 'bracket_w tab' },
+  ];
+  for (const t of tabs) {
+    try {
+      const rows = await fetchRange(t.range);
+      results.push({ label: t.desc, ok: true, detail: `${rows.length} rows found` });
+    } catch (e) {
+      results.push({ label: t.desc, ok: false, detail: e.message });
+    }
+  }
+  return results;
+}
+
+function rowsToObjects(rows) {
+  if (!rows.length) return [];
+  const [headers, ...data] = rows;
+  return data.map(row => Object.fromEntries(headers.map((h, i) => [h.trim().toLowerCase(), (row[i] || '').trim()])));
+}
+
+// ═══════════════════════════════════════════
+//  LOAD ALL DATA
+// ═══════════════════════════════════════════
+async function loadData() {
+  const [playersRaw, teamsMRaw, teamsWRaw, resultsMRaw, resultsWRaw, bracketMRaw, bracketWRaw] = await Promise.all([
+    fetchRange('players!A:B'),
+    fetchRange('teams_m!A:C'),
+    fetchRange('teams_w!A:C'),
+    fetchRange('results_m!A:G'),
+    fetchRange('results_w!A:G'),
+    fetchRange('bracket_m!A:D'),
+    fetchRange('bracket_w!A:D'),
+  ]);
+
+  const players  = rowsToObjects(playersRaw);
+  // Inject tournament field since tabs are now implicit
+  const teamsM   = rowsToObjects(teamsMRaw).map(t => ({ ...t, tournament: 'mens' }));
+  const teamsW   = rowsToObjects(teamsWRaw).map(t => ({ ...t, tournament: 'womens' }));
+  const resultsM = rowsToObjects(resultsMRaw).map(r => ({ ...r, tournament: 'mens' }));
+  const resultsW = rowsToObjects(resultsWRaw).map(r => ({ ...r, tournament: 'womens' }));
+  const bracketM = rowsToObjects(bracketMRaw).map(b => ({ ...b, tournament: 'mens' }));
+  const bracketW = rowsToObjects(bracketWRaw).map(b => ({ ...b, tournament: 'womens' }));
+
+  return {
+    players,
+    teams:   [...teamsM, ...teamsW],
+    results: [...resultsM, ...resultsW],
+    bracket: [...bracketM, ...bracketW],
+    teamsM, teamsW, resultsM, resultsW, bracketM, bracketW,
+  };
+}
+
+// ═══════════════════════════════════════════
+//  COMPUTE SCORES
+// ═══════════════════════════════════════════
+function computeScores(players, teams, results) {
+  const ownerOf  = Object.fromEntries(teams.map(t => [t.team + '|' + t.tournament, t.player]));
+  const scores   = Object.fromEntries(players.map(p => [p.player, 0]));
+  const scoresM  = Object.fromEntries(players.map(p => [p.player, 0]));
+  const scoresW  = Object.fromEntries(players.map(p => [p.player, 0]));
+  const teamWins = {};
+
+  for (const r of results) {
+    const key   = r.team + '|' + r.tournament;
+    const owner = ownerOf[key];
+    let wins = 0;
+    for (let i = 1; i <= 6; i++) {
+      const v = r['round' + i];
+      if (v === '1') {
+        wins++;
+        if (owner !== undefined) {
+          const pts = roundPoints(i - 1);
+          if (scores[owner]  !== undefined) scores[owner]  += pts;
+          if (r.tournament === 'mens'   && scoresM[owner] !== undefined) scoresM[owner] += pts;
+          if (r.tournament === 'womens' && scoresW[owner] !== undefined) scoresW[owner] += pts;
+        }
+      }
+    }
+    teamWins[key] = wins;
+  }
+
+  return { scores, scoresM, scoresW, teamWins };
+}
+
+// ═══════════════════════════════════════════
+//  BUILD BRACKET ROUNDS
+// ═══════════════════════════════════════════
+function buildRounds(bracket, results, tournament) {
+  const tBracket = bracket
+    .filter(b => b.tournament === tournament)
+    .sort((a, b) => parseInt(a.slot) - parseInt(b.slot));
+
+  const winsOf = {};
+  for (const r of results.filter(r => r.tournament === tournament)) {
+    let w = 0;
+    for (let i = 1; i <= 6; i++) if (r['round' + i] === '1') w++;
+    winsOf[r.team] = w;
+  }
+
+  const round0 = [];
+  for (let i = 0; i < tBracket.length; i += 2) {
+    round0.push([tBracket[i], tBracket[i + 1]].filter(Boolean));
+  }
+
+  const rounds = [round0];
+  const ROUNDS = 6;
+
+  for (let r = 1; r < ROUNDS; r++) {
+    const prev = rounds[r - 1];
+    const cur = [];
+    for (let i = 0; i < prev.length; i += 2) {
+      const m1 = prev[i], m2 = prev[i + 1] || [];
+      const winner1 = advanceWinner(m1, winsOf, r);
+      const winner2 = advanceWinner(m2, winsOf, r);
+      const pair = [];
+      if (winner1) pair.push(winner1);
+      if (winner2) pair.push(winner2);
+      cur.push(pair);
+    }
+    rounds.push(cur);
+  }
+
+  return { rounds, winsOf };
+}
+
+function advanceWinner(matchup, winsOf, roundIndex) {
+  const candidates = matchup.filter(t => t && (winsOf[t.team] || 0) >= roundIndex);
+  return candidates[0] || null;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════
+function colorOf(team, tournament, teams, players) {
+  const entry = teams.find(t => t.team === team && t.tournament === tournament);
+  if (!entry) return null;
+  const p = players.find(p => p.player === entry.player);
+  return p ? p.color : null;
+}
+
+function renderApp(data) {
+  const { players, teams, results, bracket } = data;
+  const { scores, scoresM, scoresW, teamWins } = computeScores(players, teams, results);
+
+  const sorted  = [...players].sort((a, b) => (scores[b.player]  || 0) - (scores[a.player]  || 0));
+  const sortedM = [...players].sort((a, b) => (scoresM[b.player] || 0) - (scoresM[a.player] || 0));
+  const sortedW = [...players].sort((a, b) => (scoresW[b.player] || 0) - (scoresW[a.player] || 0));
+
+  document.getElementById('yearLabel').textContent = new Date().getFullYear();
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+
+  // ── TABS ──
+  const tabsEl = document.createElement('div');
+  tabsEl.className = 'tabs';
+  const tabDefs = [
+    { id: 'leaderboard',     label: '🏆 Leaderboard' },
+    { id: 'bracket-mens',    label: "Men's Bracket" },
+    { id: 'bracket-womens',  label: "Women's Bracket" },
+    { id: 'rosters',         label: '📋 Rosters' },
+  ];
+  tabDefs.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (t.id === 'leaderboard' ? ' active' : '');
+    btn.textContent = t.label;
+    btn.dataset.tab = t.id;
+    btn.onclick = () => switchTab(t.id);
+    tabsEl.appendChild(btn);
+  });
+  main.appendChild(tabsEl);
+
+  const panels = {};
+
+  // ── LEADERBOARD PANEL ──
+  const lbPanel = document.createElement('div');
+  lbPanel.id = 'panel-leaderboard';
+
+  function makeLeaderboardGrid(sortedPlayers, scoreMap, tournLabel, tournColor) {
+    const isCombined = tournLabel === 'Combined Total';
+    const tourn = tournLabel.includes('Men') ? 'mens' : tournLabel.includes('Women') ? 'womens' : null;
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'section-title';
+    titleEl.style.color = tournColor || '';
+    titleEl.textContent = tournLabel;
+
+    const grid = document.createElement('div');
+    grid.className = 'leaderboard';
+
+    sortedPlayers.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'player-card';
+      card.style.animationDelay = (i * 0.06) + 's';
+      const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+      const pts = scoreMap[p.player] || 0;
+      const subtitle = isCombined
+        ? `<div class="player-teams"><span style="color:var(--mens)">${scoresM[p.player]||0}M</span> + <span style="color:var(--womens)">${scoresW[p.player]||0}W</span></div>`
+        : '';
+
+      card.innerHTML = `
+        <div class="rank-badge ${rankClass}">${i + 1}</div>
+        <div class="player-swatch" style="background:${p.color}"></div>
+        <div class="player-info">
+          <div class="player-name">${p.player}</div>
+          ${subtitle}
+        </div>
+        <div class="player-score">
+          ${pts}
+          <span class="pts-label">PTS</span>
+        </div>
+        <div class="popover-wrap">
+          <button class="info-btn" aria-label="View teams">i</button>
+          <div class="popover">
+            <div class="popover-player">
+              <span style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;display:inline-block"></span>
+              <span class="popover-player-name">${p.player}</span>
+            </div>
+            ${buildPopoverTeams(p, isCombined, tourn)}
+          </div>
+        </div>`;
+
+      // Toggle popover on info btn click, close on outside click
+      const infoBtn = card.querySelector('.info-btn');
+      const popover = card.querySelector('.popover');
+      infoBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        // Close all other open popovers
+        document.querySelectorAll('.popover.open').forEach(p => { if (p !== popover) p.classList.remove('open'); });
+        popover.classList.toggle('open');
+      });
+
+      grid.appendChild(card);
+    });
+
+    return { titleEl, grid };
+  }
+
+  function buildPopoverTeams(p, isCombined, tourn) {
+    const tournsToShow = isCombined ? ['mens', 'womens'] : [tourn];
+    return tournsToShow.map(t => {
+      const label = isCombined
+        ? `<div class="popover-tourn-label" style="color:${t==='mens'?'var(--mens)':'var(--womens)'}">${t==="mens"?"Men's":"Women's"}</div>`
+        : '';
+      const teamRows = teams
+        .filter(tm => tm.player === p.player && tm.tournament === t)
+        .map(tm => {
+          const wins = teamWins[tm.team + '|' + t] || 0;
+          return `<div class="popover-team-row"><span>${tm.team}</span>${wins ? `<span class="wins">${wins}W</span>` : ''}</div>`;
+        }).join('');
+      return label + teamRows;
+    }).join('');
+  }
+
+
+  const { titleEl: mTitle, grid: mGrid } = makeLeaderboardGrid(sortedM, scoresM, "Men's Tournament", 'var(--mens)');
+  lbPanel.appendChild(mTitle);
+  lbPanel.appendChild(mGrid);
+
+  const { titleEl: wTitle, grid: wGrid } = makeLeaderboardGrid(sortedW, scoresW, "Women's Tournament", 'var(--womens)');
+  wTitle.style.marginTop = '36px';
+  lbPanel.appendChild(wTitle);
+  lbPanel.appendChild(wGrid);
+
+  const { titleEl: cTitle, grid: cGrid } = makeLeaderboardGrid(sorted, scores, "Combined Total", '');
+  cTitle.style.marginTop = '36px';
+  lbPanel.appendChild(cTitle);
+  lbPanel.appendChild(cGrid);
+
+  panels['leaderboard'] = lbPanel;
+  main.appendChild(lbPanel);
+
+  // ── BRACKET PANELS ──
+  ['mens','womens'].forEach(tourn => {
+    const panel = document.createElement('div');
+    panel.id = `panel-bracket-${tourn}`;
+    panel.style.display = 'none';
+    const label = document.createElement('div');
+    label.className = `bracket-tournament-label ${tourn}`;
+    label.textContent = tourn === 'mens' ? "Men's Tournament" : "Women's Tournament";
+    panel.appendChild(label);
+    panel.appendChild(renderBracket(tourn, data));
+    panels[`bracket-${tourn}`] = panel;
+    main.appendChild(panel);
+  });
+
+  // ── ROSTERS PANEL ──
+  const rostersPanel = document.createElement('div');
+  rostersPanel.id = 'panel-rosters';
+  rostersPanel.style.display = 'none';
+  ['mens','womens'].forEach(tourn => {
+    const sec = document.createElement('div');
+    sec.className = 'roster-section';
+    const title = document.createElement('div');
+    title.className = 'section-title';
+    title.style.color = tourn === 'mens' ? 'var(--mens)' : 'var(--womens)';
+    title.textContent = tourn === 'mens' ? "Men's Tournament" : "Women's Tournament";
+    sec.appendChild(title);
+    const grid = document.createElement('div');
+    grid.className = 'roster-grid';
+    [...players].sort((a,b) => (tourn === 'mens' ? scoresM : scoresW)[b.player] - (tourn === 'mens' ? scoresM : scoresW)[a.player]).forEach(p => {
+      const pTeams = teams.filter(t => t.player === p.player && t.tournament === tourn);
+      if (!pTeams.length) return;
+      const card = document.createElement('div');
+      card.className = 'roster-player';
+      const pts = tourn === 'mens' ? scoresM[p.player] || 0 : scoresW[p.player] || 0;
+      card.innerHTML = `<div class="roster-player-name"><span class="dot" style="background:${p.color}"></span>${p.player}<span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--accent2)">${pts}pts</span></div>`;
+      pTeams.forEach(t => {
+        const wins = teamWins[t.team + '|' + tourn] || 0;
+        const row = document.createElement('div');
+        row.className = 'roster-team';
+        row.innerHTML = `<span>${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
+        card.appendChild(row);
+      });
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    rostersPanel.appendChild(sec);
+  });
+  panels['rosters'] = rostersPanel;
+  main.appendChild(rostersPanel);
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
+  });
+
+  function switchTab(id) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    Object.entries(panels).forEach(([k, el]) => el.style.display = k === id ? '' : 'none');
+  }
+}
+
+function makeTeamSlot(t, ri, rounds, winsOf, tournament, teams, players, isRight) {
+  const slot = document.createElement('div');
+  if (!t) {
+    slot.className = 'team-slot empty';
+    slot.innerHTML = '<span class="tname">—</span>';
+    return slot;
+  }
+  const wins = winsOf[t.team] || 0;
+  const nextRound = rounds[ri + 1];
+  const color = colorOf(t.team, tournament, teams, players);
+  slot.className = 'team-slot' +
+    (color ? ' has-owner' : '') +
+    (wins <= ri && ri > 0 ? ' eliminated' : '') +
+    (wins > ri && nextRound ? ' winner' : '');
+  if (color) {
+    if (isRight) slot.style.borderRightColor = color;
+    else slot.style.borderLeftColor = color;
+  }
+  const owner = teams.find(x => x.team === t.team && x.tournament === tournament);
+  slot.setAttribute('data-tip', owner ? owner.player : '');
+  slot.innerHTML = `<span class="seed">${t.seed || ''}</span><span class="tname">${t.team}</span>`;
+  return slot;
+}
+
+function makeBracketHalf(rounds, halfMatchups, isRight, tournament, teams, players, winsOf) {
+  // halfMatchups[ri] = matchups for this half in round ri
+  const half = document.createElement('div');
+  half.className = 'bracket-half' + (isRight ? ' right' : '');
+
+  for (let ri = 0; ri < rounds.length - 1; ri++) { // exclude championship (last round)
+    const col = document.createElement('div');
+    col.className = 'bracket-round';
+    const slots = document.createElement('div');
+    slots.className = 'bracket-slots';
+    (halfMatchups[ri] || []).forEach(pair => {
+      const mu = document.createElement('div');
+      mu.className = 'matchup';
+      const pairTeams = Array.isArray(pair) ? pair : (pair ? [pair] : []);
+      for (let si = 0; si < 2; si++) {
+        mu.appendChild(makeTeamSlot(pairTeams[si], ri, rounds, winsOf, tournament, teams, players, isRight));
+      }
+      slots.appendChild(mu);
+    });
+    col.appendChild(slots);
+    half.appendChild(col);
+  }
+  return half;
+}
+
+function renderBracket(tournament, { teams, results, bracket, players }) {
+  const { rounds, winsOf } = buildRounds(bracket, results, tournament);
+
+  const container = document.createElement('div');
+  container.className = 'bracket-container';
+
+  // ── Header row ──
+  const headers = document.createElement('div');
+  headers.className = 'bracket-headers';
+
+  const leftHeaders = document.createElement('div');
+  leftHeaders.className = 'half-headers';
+  const rightHeaders = document.createElement('div');
+  rightHeaders.className = 'half-headers right';
+  const champHeader = document.createElement('div');
+  champHeader.className = 'champ-header';
+
+  for (let ri = 0; ri < rounds.length - 1; ri++) {
+    const lh = document.createElement('div');
+    lh.className = 'round-label';
+    lh.textContent = ROUND_NAMES[ri];
+    leftHeaders.appendChild(lh);
+
+    const rh = document.createElement('div');
+    rh.className = 'round-label';
+    rh.textContent = ROUND_NAMES[ri];
+    rightHeaders.appendChild(rh);
+  }
+  headers.appendChild(leftHeaders);
+  headers.appendChild(champHeader);
+  headers.appendChild(rightHeaders);
+  container.appendChild(headers);
+
+  // ── Split matchups into left (slots 1-32) and right (slots 33-64) ──
+  // rounds[0] has 32 matchups total; left = first 16, right = last 16
+  const leftHalf = {};
+  const rightHalf = {};
+
+  for (let ri = 0; ri < rounds.length - 1; ri++) {
+    const all = rounds[ri];
+    const half = Math.ceil(all.length / 2);
+    leftHalf[ri]  = all.slice(0, half);
+    rightHalf[ri] = all.slice(half);
+  }
+
+  // ── Championship column ──
+  const champCol = document.createElement('div');
+  champCol.className = 'bracket-champ';
+
+  const champRound = rounds[rounds.length - 1]; // [[finalist1, finalist2]]
+  const champMatchup = champRound[0] || [];
+  const champLabel = document.createElement('div');
+  champLabel.className = 'champ-label';
+  champLabel.textContent = 'Championship';
+  champCol.appendChild(champLabel);
+
+  // finalist from left (top)
+  const leftFinalist = champMatchup[0] || null;
+  const rightFinalist = champMatchup[1] || null;
+
+  [leftFinalist, rightFinalist].forEach((t, i) => {
+    champCol.appendChild(makeTeamSlot(t, rounds.length - 1, rounds, winsOf, tournament, teams, players, false));
+  });
+
+  // ── Full bracket layout ──
+  const bracketFull = document.createElement('div');
+  bracketFull.className = 'bracket-full';
+
+  bracketFull.appendChild(makeBracketHalf(rounds, leftHalf, false, tournament, teams, players, winsOf));
+  bracketFull.appendChild(champCol);
+  bracketFull.appendChild(makeBracketHalf(rounds, rightHalf, true, tournament, teams, players, winsOf));
+
+  container.appendChild(bracketFull);
+  return container;
+}
+
+// ═══════════════════════════════════════════
+//  CONFIG GATE
+// ═══════════════════════════════════════════
+function showConfigPanel() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+  const panel = document.createElement('div');
+  panel.className = 'config-panel';
+  panel.innerHTML = `
+    <h2>Setup Required</h2>
+    <p>Enter your Google Sheet ID and API key to connect your bracket data. These are saved locally in your browser.</p>
+    <div class="config-field">
+      <label>Google Sheet ID</label>
+      <input id="cfgSheetId" type="text" placeholder="1OD59Z4PeaG3Nf6X720Kk00DMvcqqxGbeTibv4nLZg6U" value="${CONFIG.SHEET_ID !== 'YOUR_SHEET_ID_HERE' ? CONFIG.SHEET_ID : ''}">
+    </div>
+    <div class="config-field">
+      <label>API Key</label>
+      <input id="cfgApiKey" type="text" placeholder="AIzaSy..." value="${CONFIG.API_KEY !== 'YOUR_API_KEY_HERE' ? CONFIG.API_KEY : ''}">
+    </div>
+    <button class="config-btn" onclick="saveConfig()">Connect Sheet →</button>
+    <div class="config-hint">
+      Sheet ID is the long string in your Google Sheets URL:<br>
+      docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit<br><br>
+      API key: console.cloud.google.com → Credentials → Create API Key<br>
+      Make sure the sheet is shared as "Anyone with link can view".
+    </div>`;
+  main.appendChild(panel);
+}
+
+function saveConfig() {
+  const id  = document.getElementById('cfgSheetId').value.trim();
+  const key = document.getElementById('cfgApiKey').value.trim();
+  if (!id || !key) return alert('Please fill in both fields.');
+  localStorage.setItem('mm_sheet_id', id);
+  localStorage.setItem('mm_api_key', key);
+  CONFIG.SHEET_ID = id;
+  CONFIG.API_KEY  = key;
+  init();
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+async function init() {
+  if (CONFIG.SHEET_ID === 'YOUR_SHEET_ID_HERE' || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
+    showConfigPanel();
+    return;
+  }
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '<div class="status-msg"><div class="spinner"></div>Loading bracket data…</div>';
+  try {
+    const data = await loadData();
+    renderApp(data);
+  } catch (e) {
+    // Run per-tab diagnostics
+    let diagHtml = '';
+    try {
+      const tabs = [
+        { range: 'players!A:B',    desc: 'players tab' },
+        { range: 'teams_m!A:C',    desc: 'teams_m tab' },
+        { range: 'teams_w!A:C',    desc: 'teams_w tab' },
+        { range: 'results_m!A:G',  desc: 'results_m tab' },
+        { range: 'results_w!A:G',  desc: 'results_w tab' },
+        { range: 'bracket_m!A:D',  desc: 'bracket_m tab' },
+        { range: 'bracket_w!A:D',  desc: 'bracket_w tab' },
+      ];
+      const diag = await Promise.allSettled(tabs.map(t => fetchRange(t.range).then(rows => ({ ...t, rows }))));
+      diagHtml = '<div style="margin:16px auto;text-align:left;background:#0a0a0f;border-radius:8px;padding:14px;font-family:monospace;font-size:0.75rem;max-width:420px">'
+        + diag.map((d, i) => d.status === 'fulfilled'
+          ? `<div style="padding:3px 0;color:#4ecdc4">OK  ${tabs[i].desc}: ${d.value.rows.length} rows found</div>`
+          : `<div style="padding:3px 0;color:#ff6b35">ERR ${tabs[i].desc}: ${(d.reason?.message||'failed').split('\n')[0]}</div>`
+        ).join('') + '</div>';
+    } catch (_) {}
+    main.innerHTML = `<div class="status-msg">
+      <div style="font-size:2rem;margin-bottom:12px">!</div>
+      <div style="color:#ff6b35;margin-bottom:8px;font-weight:600">Failed to load data</div>
+      <div style="font-size:0.8rem;color:#6b6b88;max-width:480px;margin:0 auto 4px;">${e.message.replace(/\n/g,'<br>')}</div>
+      ${diagHtml}
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:center">
+        <button class="config-btn" onclick="showConfigPanel()">Update Settings</button>
+        <button class="config-btn" style="background:#1c1c28;border:1px solid #2a2a3a" onclick="init()">Retry</button>
+      </div>
+    </div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
