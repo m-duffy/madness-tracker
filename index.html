@@ -336,10 +336,19 @@
     justify-content: space-between;
   }
   .roster-team:last-child { border-bottom: none; }
+  .roster-team.elim { opacity: 0.35; text-decoration: line-through; }
   .team-wins {
     font-family: 'DM Mono', monospace;
     font-size: 0.7rem;
     color: var(--accent2);
+  }
+  .roster-seed {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    min-width: 16px;
+    display: inline-block;
+    margin-right: 4px;
   }
 
   /* ── BRACKET ── */
@@ -569,8 +578,8 @@ async function diagnose() {
   const results = [];
   const tabs = [
     { range: 'players!A:B',    desc: 'players tab' },
-    { range: 'teams_m!A:C',    desc: 'teams_m tab' },
-    { range: 'teams_w!A:C',    desc: 'teams_w tab' },
+    { range: 'teams_m!A:D',    desc: 'teams_m tab' },
+    { range: 'teams_w!A:D',    desc: 'teams_w tab' },
     { range: 'results_m!A:G',  desc: 'results_m tab' },
     { range: 'results_w!A:G',  desc: 'results_w tab' },
     { range: 'bracket_m!A:D',  desc: 'bracket_m tab' },
@@ -599,8 +608,8 @@ function rowsToObjects(rows) {
 async function loadData() {
   const [playersRaw, teamsMRaw, teamsWRaw, resultsMRaw, resultsWRaw, bracketMRaw, bracketWRaw] = await Promise.all([
     fetchRange('players!A:B'),
-    fetchRange('teams_m!A:C'),
-    fetchRange('teams_w!A:C'),
+    fetchRange('teams_m!A:D'),
+    fetchRange('teams_w!A:D'),
     fetchRange('results_m!A:G'),
     fetchRange('results_w!A:G'),
     fetchRange('bracket_m!A:D'),
@@ -695,13 +704,34 @@ function buildRounds(bracket, results, tournament) {
     rounds.push(cur);
   }
 
-  return { rounds, winsOf };
+  // A team is eliminated only if their opponent has more wins —
+  // meaning the game was played and they lost. Equal wins = not yet played.
+  const eliminatedTeams = new Set();
+  for (let r = 0; r < ROUNDS; r++) {
+    for (const pair of rounds[r]) {
+      if (pair.length === 2) {
+        const winsA = winsOf[pair[0].team] || 0;
+        const winsB = winsOf[pair[1].team] || 0;
+        if (winsA > winsB) eliminatedTeams.add(pair[1].team);
+        else if (winsB > winsA) eliminatedTeams.add(pair[0].team);
+      }
+    }
+  }
+
+  return { rounds, winsOf, eliminatedTeams };
 }
 
 function advanceWinner(matchup, winsOf, roundIndex) {
   const candidates = matchup.filter(t => t && (winsOf[t.team] || 0) >= roundIndex);
   return candidates[0] || null;
 }
+
+function buildEliminationMaps(bracket, results) {
+  const mens   = buildRounds(bracket, results, 'mens');
+  const womens = buildRounds(bracket, results, 'womens');
+  return { mens: mens.eliminatedTeams, womens: womens.eliminatedTeams };
+}
+
 
 // ═══════════════════════════════════════════
 //  RENDER
@@ -719,6 +749,7 @@ function renderApp(data) {
 
   const sortedM = [...players].sort((a, b) => (scoresM[b.player] || 0) - (scoresM[a.player] || 0));
   const sortedW = [...players].sort((a, b) => (scoresW[b.player] || 0) - (scoresW[a.player] || 0));
+  const elimMaps = buildEliminationMaps(bracket, results);
 
   document.getElementById('yearLabel').textContent = new Date().getFullYear();
   document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -828,7 +859,9 @@ function renderApp(data) {
         .filter(tm => tm.player === p.player && tm.tournament === t)
         .map(tm => {
           const wins = teamWins[tm.team + '|' + t] || 0;
-          return `<div class="popover-team-row"><span>${tm.team}</span>${wins ? `<span class="wins">${wins}W</span>` : ''}</div>`;
+          const elim = elimMaps[t].has(tm.team);
+          const style = elim ? 'opacity:0.35;text-decoration:line-through' : '';
+          return `<div class="popover-team-row" style="${style}"><span>${tm.seed ? `<span class="roster-seed">${tm.seed}</span>` : ''}${tm.team}</span>${wins ? `<span class="wins">${wins}W</span>` : ''}</div>`;
         }).join('');
       return label + teamRows;
     }).join('');
@@ -897,9 +930,10 @@ function renderApp(data) {
 
     teams.filter(t => t.player === p.player && t.tournament === 'mens').forEach(t => {
       const wins = teamWins[t.team + '|mens'] || 0;
+      const elim = elimMaps.mens.has(t.team);
       const row = document.createElement('div');
-      row.className = 'roster-team';
-      row.innerHTML = `<span>${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
+      row.className = 'roster-team' + (elim ? ' elim' : '');
+      row.innerHTML = `<span>${t.seed ? `<span class="roster-seed">${t.seed}</span>` : ''}${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
       card.appendChild(row);
     });
 
@@ -911,9 +945,10 @@ function renderApp(data) {
 
     teams.filter(t => t.player === p.player && t.tournament === 'womens').forEach(t => {
       const wins = teamWins[t.team + '|womens'] || 0;
+      const elim = elimMaps.womens.has(t.team);
       const row = document.createElement('div');
-      row.className = 'roster-team';
-      row.innerHTML = `<span>${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
+      row.className = 'roster-team' + (elim ? ' elim' : '');
+      row.innerHTML = `<span>${t.seed ? `<span class="roster-seed">${t.seed}</span>` : ''}${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
       card.appendChild(row);
     });
 
@@ -1118,8 +1153,8 @@ async function init() {
     try {
       const tabs = [
         { range: 'players!A:B',    desc: 'players tab' },
-        { range: 'teams_m!A:C',    desc: 'teams_m tab' },
-        { range: 'teams_w!A:C',    desc: 'teams_w tab' },
+        { range: 'teams_m!A:D',    desc: 'teams_m tab' },
+        { range: 'teams_w!A:D',    desc: 'teams_w tab' },
         { range: 'results_m!A:G',  desc: 'results_m tab' },
         { range: 'results_w!A:G',  desc: 'results_w tab' },
         { range: 'bracket_m!A:D',  desc: 'bracket_m tab' },
