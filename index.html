@@ -46,6 +46,7 @@
 
   /* ── HEADER ── */
   header {
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
     padding: 28px 0 24px;
     margin-bottom: 40px;
@@ -858,7 +859,7 @@ function renderApp(data) {
   const { maxM, maxW } = computeMaxScores(players, teams, bracket, results, winsOfMens, winsOfWomens, elimMaps);
 
   document.getElementById('yearLabel').textContent = new Date().getFullYear();
-  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
   const main = document.getElementById('mainContent');
   main.innerHTML = '';
@@ -1073,10 +1074,13 @@ function renderApp(data) {
     document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
   });
 
-  function switchTab(id) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
-    Object.entries(panels).forEach(([k, el]) => el.style.display = k === id ? '' : 'none');
-  }
+  switchTab(activeTab);
+}
+
+function switchTab(id) {
+  activeTab = id;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('[id^="panel-"]').forEach(el => el.style.display = el.id === 'panel-' + id ? '' : 'none');
 }
 
 function makeTeamSlot(t, ri, rounds, winsOf, tournament, teams, players, isRight) {
@@ -1247,6 +1251,23 @@ function saveConfig() {
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
+let activeTab = 'leaderboard';
+let refreshTimer = null;
+
+async function silentRefresh() {
+  try {
+    const data = await loadData();
+    renderApp(data);
+  } catch (_) {
+    // Silently fail on background refresh — don't disrupt the user
+  }
+}
+
+function scheduleRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(silentRefresh, 60000);
+}
+
 async function init() {
   if (CONFIG.SHEET_ID === 'YOUR_SHEET_ID_HERE' || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
     showConfigPanel();
@@ -1257,6 +1278,7 @@ async function init() {
   try {
     const data = await loadData();
     renderApp(data);
+    scheduleRefresh();
   } catch (e) {
     // Run per-tab diagnostics
     let diagHtml = '';
