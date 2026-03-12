@@ -191,6 +191,14 @@
     color: var(--muted);
     margin-top: 2px;
   }
+  .max-score {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+    opacity: 0.7;
+  }
   .player-score {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 2rem;
@@ -734,6 +742,89 @@ function buildEliminationMaps(bracket, results) {
 
 
 // ═══════════════════════════════════════════
+//  MAX POSSIBLE SCORES
+// ═══════════════════════════════════════════
+function computeMaxScores(players, teams, bracket, results, winsOfMens, winsOfWomens, elimMaps) {
+  const maxM = Object.fromEntries(players.map(p => [p.player, 0]));
+  const maxW = Object.fromEntries(players.map(p => [p.player, 0]));
+
+  ['mens', 'womens'].forEach(tourn => {
+    const maxMap = tourn === 'mens' ? maxM : maxW;
+    const winsOf = tourn === 'mens' ? winsOfMens : winsOfWomens;
+
+    const tBracket = bracket
+      .filter(b => b.tournament === tourn)
+      .sort((a, b) => parseInt(a.slot) - parseInt(b.slot));
+
+    // Run one simulation per player
+    players.forEach(player => {
+      // Set of teams this player owns in this tournament
+      const myTeams = new Set(
+        teams.filter(t => t.tournament === tourn && t.player === player.player).map(t => t.team)
+      );
+      if (myTeams.size === 0) return;
+
+      let simRound = [];
+      for (let i = 0; i < tBracket.length; i += 2) {
+        simRound.push([tBracket[i] || null, tBracket[i + 1] || null]);
+      }
+
+      const ROUNDS = 6;
+      for (let r = 0; r < ROUNDS; r++) {
+        const nextRound = [];
+        for (const [a, b] of simRound) {
+          if (!a && !b) { nextRound.push(null); continue; }
+          if (!a)       { nextRound.push(b);    continue; }
+          if (!b)       { nextRound.push(a);    continue; }
+
+          const aWins = winsOf[a.team] || 0;
+          const bWins = winsOf[b.team] || 0;
+
+          // Game already played if either team has advanced past this round
+          if (aWins > r || bWins > r) {
+            nextRound.push(aWins >= bWins ? a : b);
+            continue;
+          }
+
+          // Game not yet played — from this player's perspective:
+          // if one of the teams is theirs, it wins
+          // if both are theirs, better seed wins (they earn points either way)
+          // if neither is theirs, pick a arbitrarily (no points either way)
+          const aIsMine = myTeams.has(a.team);
+          const bIsMine = myTeams.has(b.team);
+          const pts = roundPoints(r);
+
+          if (aIsMine && !bIsMine) {
+            nextRound.push(a);
+            maxMap[player.player] += pts;
+          } else if (bIsMine && !aIsMine) {
+            nextRound.push(b);
+            maxMap[player.player] += pts;
+          } else if (aIsMine && bIsMine) {
+            // Two of this player's teams meet — only one can win
+            const aSeed = parseInt(a.seed) || 99;
+            const bSeed = parseInt(b.seed) || 99;
+            nextRound.push(aSeed <= bSeed ? a : b);
+            maxMap[player.player] += pts;
+          } else {
+            // Neither is mine — advance a, no points
+            nextRound.push(a);
+          }
+        }
+
+        const paired = [];
+        for (let i = 0; i < nextRound.length; i += 2) {
+          paired.push([nextRound[i] || null, nextRound[i + 1] || null]);
+        }
+        simRound = paired;
+      }
+    });
+  });
+
+  return { maxM, maxW };
+}
+
+// ═══════════════════════════════════════════
 //  RENDER
 // ═══════════════════════════════════════════
 function colorOf(team, tournament, teams, players) {
@@ -750,6 +841,21 @@ function renderApp(data) {
   const sortedM = [...players].sort((a, b) => (scoresM[b.player] || 0) - (scoresM[a.player] || 0));
   const sortedW = [...players].sort((a, b) => (scoresW[b.player] || 0) - (scoresW[a.player] || 0));
   const elimMaps = buildEliminationMaps(bracket, results);
+
+  // Build winsOf maps for both tournaments (needed for max score simulation)
+  const winsOfMens = {};
+  for (const r of results.filter(r => r.tournament === 'mens')) {
+    let w = 0;
+    for (let i = 1; i <= 6; i++) if (r['round' + i] === '1') w++;
+    winsOfMens[r.team] = w;
+  }
+  const winsOfWomens = {};
+  for (const r of results.filter(r => r.tournament === 'womens')) {
+    let w = 0;
+    for (let i = 1; i <= 6; i++) if (r['round' + i] === '1') w++;
+    winsOfWomens[r.team] = w;
+  }
+  const { maxM, maxW } = computeMaxScores(players, teams, bracket, results, winsOfMens, winsOfWomens, elimMaps);
 
   document.getElementById('yearLabel').textContent = new Date().getFullYear();
   document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -811,12 +917,16 @@ function renderApp(data) {
         ? `<div class="player-teams"><span style="color:var(--mens)">${scoresM[p.player]||0}M</span> + <span style="color:var(--womens)">${scoresW[p.player]||0}W</span></div>`
         : '';
 
+      const maxPts = tourn === 'mens' ? (scoresM[p.player]||0) + (maxM[p.player]||0)
+                  : tourn === 'womens' ? (scoresW[p.player]||0) + (maxW[p.player]||0)
+                  : null;
       card.innerHTML = `
         <div class="rank-badge">${i + 1}</div>
         <div class="player-swatch" style="background:${p.color}"></div>
         <div class="player-info">
           <div class="player-name">${p.player}</div>
           ${subtitle}
+          ${maxPts !== null && maxPts > pts ? `<div class="max-score">↑ ${maxPts} pts possible</div>` : ''}
         </div>
         <div class="player-score">
           ${pts}
