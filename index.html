@@ -926,7 +926,7 @@ function renderApp(data) {
         <div class="player-info">
           <div class="player-name">${p.player}</div>
           ${subtitle}
-          ${maxPts !== null && maxPts > pts ? `<div class="max-score">↑ ${maxPts} pts possible</div>` : ''}
+          ${maxPts !== null && maxPts > pts ? `<div class="max-score">${maxPts} pts possible</div>` : ''}
         </div>
         <div class="player-score">
           ${pts}
