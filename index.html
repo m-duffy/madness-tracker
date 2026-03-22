@@ -6,6 +6,7 @@
 <title>March Madness Draft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --bg: #0a0a0f;
@@ -19,511 +20,151 @@
     --mens: #3a7bd5;
     --womens: #e040a0;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── BACKGROUND TEXTURE ── */
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(58,123,213,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(224,64,160,0.07) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(58,123,213,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(224,64,160,0.07) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
   }
-
   .wrap { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
-
-  /* ── HEADER ── */
-  header {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 28px 0 24px;
-    margin-bottom: 40px;
-  }
+  header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 28px 0 24px; margin-bottom: 40px; }
   header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-
-  .logo {
-    display: flex; align-items: baseline; gap: 10px;
-  }
+  .logo { display: flex; align-items: baseline; gap: 10px; }
   .logo h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    letter-spacing: 0.04em;
-    line-height: 1;
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: 0.04em; line-height: 1;
     background: linear-gradient(135deg, #ff6b35 0%, #ff9a5c 50%, #ffd166 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
-  .logo .year {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.85rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-  }
-
-  .last-updated {
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-  }
-
-  /* ── LOADING / ERROR ── */
-  .status-msg {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--muted);
-    font-size: 1rem;
-  }
-  .status-msg .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
+  .logo .year { font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--muted); letter-spacing: 0.1em; }
+  .last-updated { font-size: 0.75rem; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+  .status-msg { text-align: center; padding: 80px 20px; color: var(--muted); font-size: 1rem; }
+  .status-msg .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── TABS ── */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 36px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    overscroll-behavior-x: contain;
-    touch-action: pan-x;
-  }
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 36px; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; overscroll-behavior-x: contain; touch-action: pan-x; }
   .tabs::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px 20px;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: color 0.2s, border-color 0.2s;
-  }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: none; border: none; cursor: pointer; padding: 10px 20px; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; white-space: nowrap; }
   .tab-btn:hover { color: var(--text); }
   .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* ── LEADERBOARD ── */
-  .leaderboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
-    margin-bottom: 48px;
-  }
-
-  .player-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    animation: fadeUp 0.4s ease both;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    position: relative;
-  }
+  /* LEADERBOARD */
+  .leaderboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .player-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; animation: fadeUp 0.4s ease both; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
   .player-card:hover { border-color: rgba(255,107,53,0.3); }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .rank-badge {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.6rem;
-    line-height: 1;
-    width: 36px;
-    text-align: center;
-    flex-shrink: 0;
-    color: var(--text);
-    position: relative;
-  }
-
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .rank-badge { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; width: 36px; text-align: center; flex-shrink: 0; color: var(--text); }
   .player-card.rank-gold   { border-color: rgba(255,215,0,0.7);   box-shadow: 0 0 16px rgba(255,215,0,0.2),   inset 0 0 20px rgba(255,215,0,0.04); }
   .player-card.rank-silver { border-color: rgba(192,192,192,0.7); box-shadow: 0 0 16px rgba(192,192,192,0.15), inset 0 0 20px rgba(192,192,192,0.04); }
   .player-card.rank-bronze { border-color: rgba(205,127,50,0.7);  box-shadow: 0 0 16px rgba(205,127,50,0.18), inset 0 0 20px rgba(205,127,50,0.04); }
-
-  .player-swatch {
-    width: 12px; height: 40px;
-    border-radius: 6px;
-    flex-shrink: 0;
-  }
+  .player-swatch { width: 12px; height: 40px; border-radius: 6px; flex-shrink: 0; }
   .player-info { flex: 1; min-width: 0; }
-  .player-name {
-    font-weight: 600;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .player-teams {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .max-score {
-    font-size: 0.68rem;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.04em;
-    margin-top: 2px;
-    opacity: 0.7;
-  }
-  .player-score {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    line-height: 1;
-    text-align: right;
-  }
-  .player-score .pts-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    display: block;
-    text-align: right;
-  }
+  .player-name { font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .player-teams { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .max-score { font-size: 0.68rem; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.04em; margin-top: 2px; opacity: 0.7; }
+  .player-score { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; line-height: 1; text-align: right; }
+  .player-score .pts-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; display: block; text-align: right; }
 
-  /* ── POPOVER ── */
-  .popover-wrap {
-    position: relative;
-    display: inline-flex;
-  }
-  .info-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 0.65rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: border-color 0.2s, color 0.2s;
-    font-family: serif;
-    font-style: italic;
-    font-weight: bold;
-    line-height: 1;
-  }
+  /* POPOVER */
+  .popover-wrap { position: relative; display: inline-flex; }
+  .info-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 50%; width: 20px; height: 20px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.2s, color 0.2s; font-family: serif; font-style: italic; font-weight: bold; line-height: 1; }
   .info-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .popover {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    right: 0;
-    background: #1c1c28;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
-    min-width: 200px;
-    max-width: 240px;
-    z-index: 200;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    display: none;
-    animation: popIn 0.15s ease;
-  }
+  .popover { position: absolute; bottom: calc(100% + 8px); right: 0; background: #1c1c28; border: 1px solid var(--border); border-radius: 10px; padding: 12px; min-width: 200px; max-width: 240px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none; animation: popIn 0.15s ease; }
   .popover.open { display: block; }
-  @keyframes popIn {
-    from { opacity: 0; transform: translateY(6px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .popover-player {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-  .popover-player-name {
-    font-weight: 600;
-    font-size: 0.82rem;
-    flex: 1;
-  }
-  .popover-tourn-label {
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: 'DM Mono', monospace;
-    padding: 3px 0 2px;
-  }
-  .popover-team-row {
-    font-size: 0.73rem;
-    color: var(--muted);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
+  @keyframes popIn { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .popover-player { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .popover-player-name { font-weight: 600; font-size: 0.82rem; flex: 1; }
+  .popover-tourn-label { font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Mono', monospace; padding: 3px 0 2px; }
+  .popover-team-row { font-size: 0.73rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .popover-team-row:last-child { border-bottom: none; }
   .popover-team-row .wins { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 0.67rem; }
 
-  /* ── ROSTER TABLE ── */
-  .roster-section { margin-bottom: 48px; }
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .roster-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-  }
-  .roster-player {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-  }
-  .roster-player-name {
-    font-weight: 600;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .roster-player-name .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .roster-team {
-    font-size: 0.78rem;
-    color: var(--muted);
-    padding: 3px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+  /* ROSTER */
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .roster-player { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .roster-player-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .roster-player-name .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .roster-team { font-size: 0.78rem; color: var(--muted); padding: 3px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .roster-team:last-child { border-bottom: none; }
   .roster-team.elim { opacity: 0.35; text-decoration: line-through; }
-  .team-wins {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--accent2);
-  }
-  .roster-seed {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--muted);
-    min-width: 16px;
-    display: inline-block;
-    margin-right: 4px;
-  }
+  .team-wins { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--accent2); }
+  .roster-seed { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); min-width: 16px; display: inline-block; margin-right: 4px; }
 
-  /* ── BRACKET ── */
-  .bracket-container {
-    overflow-x: auto;
-    padding-bottom: 20px;
-    margin-bottom: 48px;
-  }
-  .bracket-tournament-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
-    letter-spacing: 0.06em;
-    margin-bottom: 12px;
-  }
+  /* BRACKET */
+  .bracket-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+  .bracket-tournament-label { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.06em; margin-bottom: 0; }
   .bracket-tournament-label.mens { color: var(--mens); }
   .bracket-tournament-label.womens { color: var(--womens); }
-
-  .bracket-full {
-    display: flex;
-    align-items: stretch;
-    min-width: 1300px;
-  }
-  .bracket-half {
-    display: flex;
-    flex: 1;
-  }
-  .bracket-half.right {
-    flex-direction: row-reverse;
-  }
-  .bracket-headers {
-    display: flex;
-    min-width: 1300px;
-    margin-bottom: 4px;
-  }
-  .bracket-headers .half-headers {
-    display: flex;
-    flex: 1;
-  }
+  .edit-results-btn { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 7px 16px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+  .edit-results-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .edit-results-btn.active { border-color: var(--mens); color: var(--mens); background: rgba(58,123,213,0.08); }
+  .edit-banner { display: flex; align-items: center; gap: 12px; background: rgba(58,123,213,0.1); border: 1px solid rgba(58,123,213,0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.8rem; color: var(--mens); animation: fadeUp 0.2s ease both; flex-wrap: wrap; }
+  .edit-banner .banner-msg { font-weight: 600; letter-spacing: 0.04em; }
+  .edit-banner .banner-sub { font-size: 0.72rem; color: var(--muted); flex: 1; }
+  .edit-done-btn { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: var(--mens); border: none; color: white; border-radius: 6px; padding: 6px 14px; cursor: pointer; transition: opacity 0.2s; }
+  .edit-done-btn:hover { opacity: 0.85; }
+  .bracket-container { overflow-x: auto; padding-bottom: 20px; margin-bottom: 48px; }
+  .bracket-full { display: flex; align-items: stretch; min-width: 1300px; }
+  .bracket-half { display: flex; flex: 1; }
+  .bracket-half.right { flex-direction: row-reverse; }
+  .bracket-headers { display: flex; min-width: 1300px; margin-bottom: 4px; }
+  .bracket-headers .half-headers { display: flex; flex: 1; }
   .bracket-headers .half-headers.right { flex-direction: row-reverse; }
   .bracket-headers .champ-header { width: 110px; flex-shrink: 0; }
-  .round-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-align: center;
-    flex: 1;
-    padding: 0 2px;
-  }
-  .bracket-round {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-  .bracket-slots {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    flex: 1;
-    padding: 0 2px;
-  }
-  .bracket-half.right .team-slot.has-owner {
-    border-left-width: 1px;
-    border-right-width: 3px;
-  }
-  .matchup {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 4px 0;
-    position: relative;
-  }
-  .matchup::after {
-    content: '';
-    position: absolute;
-    right: -2px;
-    top: 28%;
-    height: 44%;
-    width: 2px;
-    background: var(--border);
-  }
-  .bracket-half.right .matchup::after {
-    right: auto;
-    left: -2px;
-  }
-  .bracket-champ {
-    width: 110px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    padding: 0 6px;
-    gap: 3px;
-  }
-  .champ-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    text-align: center;
-    margin-bottom: 4px;
-  }
+  .round-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: center; flex: 1; padding: 0 2px; }
+  .bracket-round { display: flex; flex-direction: column; flex: 1; }
+  .bracket-slots { display: flex; flex-direction: column; justify-content: space-around; flex: 1; padding: 0 2px; }
+  .matchup { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; position: relative; }
+  .matchup::after { content: ''; position: absolute; right: -2px; top: 28%; height: 44%; width: 2px; background: var(--border); }
+  .bracket-half.right .matchup::after { right: auto; left: -2px; }
+  .bracket-champ { width: 110px; flex-shrink: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: center; padding: 0 6px; gap: 3px; }
+  .champ-label { font-family: 'Bebas Neue', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--accent); text-align: center; margin-bottom: 4px; }
+  .bracket-half.right .team-slot.has-owner { border-left-width: 1px; border-right-width: 3px; }
 
-  .team-slot {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 8px;
-    font-size: 0.72rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-height: 28px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: border-color 0.2s;
-    cursor: default;
-  }
-  .team-slot.has-owner {
-    border-left-width: 3px;
-  }
-  .team-slot.winner {
-    background: var(--surface);
-    font-weight: 600;
-  }
-  .team-slot.eliminated {
-    opacity: 0.38;
-  }
-  .team-slot .seed {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--muted);
-    min-width: 14px;
-    flex-shrink: 0;
-  }
-  .team-slot .tname { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  /* TEAM SLOTS */
+  .team-slot { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 0.72rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 28px; display: flex; align-items: center; gap: 6px; transition: border-color 0.15s, background 0.15s; cursor: default; }
+  .team-slot.has-owner { border-left-width: 3px; }
+  .team-slot.winner { background: var(--surface); font-weight: 600; }
+  .team-slot.eliminated { opacity: 0.38; }
   .team-slot.empty { background: transparent; border-color: transparent; opacity: 0.3; }
+  .team-slot .seed { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--muted); min-width: 14px; flex-shrink: 0; }
+  .team-slot .tname { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  /* Edit mode slot states */
+  .team-slot.tappable { cursor: pointer; }
+  .team-slot.tappable:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+  .team-slot.pending-confirm { border-color: var(--mens) !important; background: rgba(58,123,213,0.15) !important; cursor: default; }
+  .team-slot.pending-confirm .tname { color: #7aaef0; }
+  .team-slot.pending-other { opacity: 0.35; cursor: default; }
+  .team-slot.reversible { cursor: pointer; }
+  .team-slot.reversible:hover { border-color: rgba(255,107,53,0.5) !important; background: rgba(255,107,53,0.07) !important; }
+  .team-slot.reversible:hover .tname::after { content: ' ↩'; font-size: 0.65rem; color: var(--accent); }
+  .slot-confirm-btns { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
+  .slot-confirm-btns button { font-family: 'DM Sans', sans-serif; font-size: 0.65rem; font-weight: 600; border-radius: 4px; padding: 3px 8px; cursor: pointer; border: none; white-space: nowrap; }
+  .btn-confirm { background: var(--mens); color: white; }
+  .btn-confirm:hover { opacity: 0.85; }
+  .btn-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border) !important; }
+  .btn-cancel:hover { color: var(--text); }
 
-  /* ── TOOLTIP ── */
+  /* TOOLTIP */
   [data-tip] { position: relative; }
-  [data-tip]:hover::after {
-    content: attr(data-tip);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #222233;
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 0.72rem;
-    padding: 5px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 100;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-  }
+  [data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #222233; border: 1px solid var(--border); color: var(--text); font-size: 0.72rem; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; z-index: 100; font-family: 'DM Sans', sans-serif; font-weight: 500; }
 
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .leaderboard { grid-template-columns: 1fr; }
-  }
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 0.82rem; padding: 10px 20px; border-radius: 20px; z-index: 500; pointer-events: none; animation: toastIn 0.2s ease, toastOut 0.3s ease 2.5s forwards; white-space: nowrap; }
+  .toast.error   { border-color: rgba(255,107,53,0.5); color: var(--accent); }
+  .toast.success { border-color: rgba(78,205,196,0.5); color: var(--accent2); }
+  @keyframes toastIn  { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+  @media (max-width: 600px) { .leaderboard { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-
 <header>
   <div class="wrap">
     <div class="logo">
@@ -533,30 +174,52 @@
     <div class="last-updated" id="lastUpdated"></div>
   </div>
 </header>
-
 <div class="wrap" id="mainContent">
-  <div class="status-msg" id="loadingMsg">
-    <div class="spinner"></div>
-    Loading bracket data…
-  </div>
+  <div class="status-msg"><div class="spinner"></div>Loading bracket data…</div>
 </div>
-
 <script>
 // ═══════════════════════════════════════════
-//  CONFIG — edit these two values
+//  CONFIG
 // ═══════════════════════════════════════════
 const CONFIG = {
-  SHEET_ID:  localStorage.getItem('mm_sheet_id')  || '1OD59Z4PeaG3Nf6X720Kk00DMvcqqxGbeTibv4nLZg6U',
-  API_KEY:   localStorage.getItem('mm_api_key')   || 'AIzaSyDJJ1JTtZMIIhfeqqJDkcqxhHxaljVbWAg',
+  SHEET_ID:  localStorage.getItem('mm_sheet_id') || 'YOUR_SHEET_ID_HERE',
+  API_KEY:   localStorage.getItem('mm_api_key')  || 'YOUR_API_KEY_HERE',
+  CLIENT_ID: '220604136523-qnp31r9qc5n36pca7voe4f474m9sr4v7.apps.googleusercontent.com',
 };
-
-// Round names
 const ROUND_NAMES = ['Round of 64','Round of 32','Sweet 16','Elite Eight','Final Four','Championship'];
-// Points per round: round index 0-5 → 3,4,5,6,7,8
 const roundPoints = r => r + 3;
 
 // ═══════════════════════════════════════════
-//  SHEETS API HELPER
+//  STATE
+// ═══════════════════════════════════════════
+let activeTab    = 'leaderboard';
+let refreshTimer = null;
+let editMode     = { mens: false, womens: false };
+let pendingPick  = null;  // { tournament, roundIndex, team, isReverse, otherTeam }
+let oauthToken   = null;  // held in memory only, never persisted
+
+// ═══════════════════════════════════════════
+//  OAUTH
+// ═══════════════════════════════════════════
+function getOAuthToken() {
+  return new Promise((resolve, reject) => {
+    if (oauthToken) { resolve(oauthToken); return; }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: CONFIG.CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      callback: (resp) => {
+        if (resp.error) { reject(new Error(resp.error)); return; }
+        oauthToken = resp.access_token;
+        setTimeout(() => { oauthToken = null; }, (resp.expires_in - 60) * 1000);
+        resolve(oauthToken);
+      },
+    });
+    client.requestAccessToken();
+  });
+}
+
+// ═══════════════════════════════════════════
+//  SHEETS API
 // ═══════════════════════════════════════════
 async function fetchBatchRanges(ranges) {
   const params = ranges.map(r => `ranges=${encodeURIComponent(r)}`).join('&');
@@ -565,20 +228,54 @@ async function fetchBatchRanges(ranges) {
   const text = await r.text();
   if (!r.ok) {
     let msg = `HTTP ${r.status}`;
-    try {
-      const j = JSON.parse(text);
-      msg = j?.error?.message || msg;
-    } catch {}
+    try { const j = JSON.parse(text); msg = j?.error?.message || msg; } catch {}
     if (r.status === 400) throw new Error(`Bad request — double-check your Sheet ID.\n${msg}`);
     if (r.status === 403) throw new Error(`Access denied — make sure the sheet is shared as "Anyone with link" and the API key has Sheets API enabled.\n${msg}`);
-    if (r.status === 404) {
-      const tabs = ranges.map(r => r.split('!')[0]).join(', ');
-      throw new Error(`Sheet or tab not found. Expected tabs: ${tabs}`);
-    }
+    if (r.status === 404) throw new Error(`Sheet or tab not found. Expected tabs: ${ranges.map(r => r.split('!')[0]).join(', ')}`);
     throw new Error(`Sheets API error: ${msg}`);
   }
   const d = JSON.parse(text);
   return d.valueRanges.map(vr => vr.values || []);
+}
+
+async function appendRow(sheetTab, rowValues) {
+  const token = await getOAuthToken();
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(sheetTab)}!A:C:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [rowValues] }),
+  });
+  if (!r.ok) {
+    const text = await r.text();
+    let msg = `HTTP ${r.status}`;
+    try { const j = JSON.parse(text); msg = j?.error?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+}
+
+async function deleteLastMatchingRow(sheetTab, teamName, roundName) {
+  const token = await getOAuthToken();
+  // Read all rows to find the target
+  const getUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(sheetTab)}!A:C`;
+  const r = await fetch(getUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+  const data = await r.json();
+  const rows = data.values || [];
+  let targetRow = -1;
+  for (let i = rows.length - 1; i >= 1; i--) {
+    if ((rows[i][1] || '') === roundName && (rows[i][2] || '') === teamName) { targetRow = i + 1; break; }
+  }
+  if (targetRow === -1) return;
+  // Get numeric sheet ID for batchUpdate
+  const metaR = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}?key=${CONFIG.API_KEY}`);
+  const meta  = await metaR.json();
+  const sheet = meta.sheets.find(s => s.properties.title === sheetTab);
+  if (!sheet) return;
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ deleteDimension: { range: { sheetId: sheet.properties.sheetId, dimension: 'ROWS', startIndex: targetRow - 1, endIndex: targetRow } } }] }),
+  });
 }
 
 function rowsToObjects(rows) {
@@ -588,67 +285,47 @@ function rowsToObjects(rows) {
 }
 
 // ═══════════════════════════════════════════
-//  LOAD ALL DATA
+//  LOAD DATA
 // ═══════════════════════════════════════════
 async function loadData() {
-  const [playersRaw, teamsMRaw, teamsWRaw, resultsMRaw, resultsWRaw, bracketMRaw, bracketWRaw] = 
-    await fetchBatchRanges([
-      'players!A:B',
-      'teams_m!A:D',
-      'teams_w!A:D',
-      'results_m!A:G',
-      'results_w!A:G',
-      'bracket_m!A:D',
-      'bracket_w!A:D',
-    ]);
-
-  const players  = rowsToObjects(playersRaw);
-  // Inject tournament field since tabs are now implicit
-  const teamsM   = rowsToObjects(teamsMRaw).map(t => ({ ...t, tournament: 'mens' }));
-  const teamsW   = rowsToObjects(teamsWRaw).map(t => ({ ...t, tournament: 'womens' }));
-  const resultsM = rowsToObjects(resultsMRaw).map(r => ({ ...r, tournament: 'mens' }));
-  const resultsW = rowsToObjects(resultsWRaw).map(r => ({ ...r, tournament: 'womens' }));
-  const bracketM = rowsToObjects(bracketMRaw).map(b => ({ ...b, tournament: 'mens' }));
-  const bracketW = rowsToObjects(bracketWRaw).map(b => ({ ...b, tournament: 'womens' }));
-
-  return {
-    players,
-    teams:   [...teamsM, ...teamsW],
-    results: [...resultsM, ...resultsW],
-    bracket: [...bracketM, ...bracketW],
-    teamsM, teamsW, resultsM, resultsW, bracketM, bracketW,
-  };
+  const [pR, tmR, twR, rmR, rwR, bmR, bwR] = await fetchBatchRanges([
+    'players!A:B','teams_m!A:D','teams_w!A:D','results_m!A:G','results_w!A:G','bracket_m!A:D','bracket_w!A:D',
+  ]);
+  const players  = rowsToObjects(pR);
+  const teamsM   = rowsToObjects(tmR).map(t => ({ ...t, tournament: 'mens' }));
+  const teamsW   = rowsToObjects(twR).map(t => ({ ...t, tournament: 'womens' }));
+  const resultsM = rowsToObjects(rmR).map(r => ({ ...r, tournament: 'mens' }));
+  const resultsW = rowsToObjects(rwR).map(r => ({ ...r, tournament: 'womens' }));
+  const bracketM = rowsToObjects(bmR).map(b => ({ ...b, tournament: 'mens' }));
+  const bracketW = rowsToObjects(bwR).map(b => ({ ...b, tournament: 'womens' }));
+  return { players, teams: [...teamsM,...teamsW], results: [...resultsM,...resultsW], bracket: [...bracketM,...bracketW], teamsM, teamsW, resultsM, resultsW, bracketM, bracketW };
 }
 
 // ═══════════════════════════════════════════
 //  COMPUTE SCORES
 // ═══════════════════════════════════════════
 function computeScores(players, teams, results) {
-  const ownerOf  = Object.fromEntries(teams.map(t => [t.team + '|' + t.tournament, t.player]));
-  const scores   = Object.fromEntries(players.map(p => [p.player, 0]));
-  const scoresM  = Object.fromEntries(players.map(p => [p.player, 0]));
-  const scoresW  = Object.fromEntries(players.map(p => [p.player, 0]));
+  const ownerOf = Object.fromEntries(teams.map(t => [t.team+'|'+t.tournament, t.player]));
+  const scores  = Object.fromEntries(players.map(p => [p.player, 0]));
+  const scoresM = Object.fromEntries(players.map(p => [p.player, 0]));
+  const scoresW = Object.fromEntries(players.map(p => [p.player, 0]));
   const teamWins = {};
-
   for (const r of results) {
-    const key   = r.team + '|' + r.tournament;
-    const owner = ownerOf[key];
+    const key = r.team+'|'+r.tournament, owner = ownerOf[key];
     let wins = 0;
     for (let i = 1; i <= 6; i++) {
-      const v = r['round' + i];
-      if (v === '1') {
+      if (r['round'+i] === '1') {
         wins++;
         if (owner !== undefined) {
-          const pts = roundPoints(i - 1);
+          const pts = roundPoints(i-1);
           if (scores[owner]  !== undefined) scores[owner]  += pts;
-          if (r.tournament === 'mens'   && scoresM[owner] !== undefined) scoresM[owner] += pts;
-          if (r.tournament === 'womens' && scoresW[owner] !== undefined) scoresW[owner] += pts;
+          if (r.tournament==='mens'   && scoresM[owner]!==undefined) scoresM[owner] += pts;
+          if (r.tournament==='womens' && scoresW[owner]!==undefined) scoresW[owner] += pts;
         }
       }
     }
     teamWins[key] = wins;
   }
-
   return { scores, scoresM, scoresW, teamWins };
 }
 
@@ -656,260 +333,162 @@ function computeScores(players, teams, results) {
 //  BUILD BRACKET ROUNDS
 // ═══════════════════════════════════════════
 function buildRounds(bracket, results, tournament) {
-  const tBracket = bracket
-    .filter(b => b.tournament === tournament)
-    .sort((a, b) => parseInt(a.slot) - parseInt(b.slot));
-
+  const tBracket = bracket.filter(b=>b.tournament===tournament).sort((a,b)=>parseInt(a.slot)-parseInt(b.slot));
   const winsOf = {};
-  for (const r of results.filter(r => r.tournament === tournament)) {
-    let w = 0;
-    for (let i = 1; i <= 6; i++) if (r['round' + i] === '1') w++;
-    winsOf[r.team] = w;
+  for (const r of results.filter(r=>r.tournament===tournament)) {
+    let w=0; for (let i=1;i<=6;i++) if (r['round'+i]==='1') w++; winsOf[r.team]=w;
   }
-
   const round0 = [];
-  for (let i = 0; i < tBracket.length; i += 2) {
-    round0.push([tBracket[i], tBracket[i + 1]].filter(Boolean));
-  }
-
+  for (let i=0;i<tBracket.length;i+=2) round0.push([tBracket[i],tBracket[i+1]].filter(Boolean));
   const rounds = [round0];
-  const ROUNDS = 6;
-
-  for (let r = 1; r < ROUNDS; r++) {
-    const prev = rounds[r - 1];
-    const cur = [];
-    for (let i = 0; i < prev.length; i += 2) {
-      const m1 = prev[i], m2 = prev[i + 1] || [];
-      const winner1 = advanceWinner(m1, winsOf, r);
-      const winner2 = advanceWinner(m2, winsOf, r);
-      const pair = [];
-      if (winner1) pair.push(winner1);
-      if (winner2) pair.push(winner2);
-      cur.push(pair);
+  for (let r=1;r<6;r++) {
+    const prev=rounds[r-1], cur=[];
+    for (let i=0;i<prev.length;i+=2) {
+      const w1=advanceWinner(prev[i],winsOf,r), w2=advanceWinner(prev[i+1]||[],winsOf,r);
+      const pair=[]; if(w1)pair.push(w1); if(w2)pair.push(w2); cur.push(pair);
     }
     rounds.push(cur);
   }
-
-  // A team is eliminated only if their opponent has more wins —
-  // meaning the game was played and they lost. Equal wins = not yet played.
   const eliminatedTeams = new Set();
-  for (let r = 0; r < ROUNDS; r++) {
+  for (let r=0;r<6;r++) {
     for (const pair of rounds[r]) {
-      if (pair.length === 2) {
-        const winsA = winsOf[pair[0].team] || 0;
-        const winsB = winsOf[pair[1].team] || 0;
-        if (winsA > winsB) eliminatedTeams.add(pair[1].team);
-        else if (winsB > winsA) eliminatedTeams.add(pair[0].team);
+      if (pair.length===2) {
+        const wA=winsOf[pair[0].team]||0, wB=winsOf[pair[1].team]||0;
+        if (wA>wB) eliminatedTeams.add(pair[1].team);
+        else if (wB>wA) eliminatedTeams.add(pair[0].team);
       }
     }
   }
-
   return { rounds, winsOf, eliminatedTeams };
 }
-
-function advanceWinner(matchup, winsOf, roundIndex) {
-  const candidates = matchup.filter(t => t && (winsOf[t.team] || 0) >= roundIndex);
-  return candidates[0] || null;
+function advanceWinner(matchup,winsOf,roundIndex) {
+  return matchup.filter(t=>t&&(winsOf[t.team]||0)>=roundIndex)[0]||null;
 }
-
-function buildEliminationMaps(bracket, results) {
-  const mens   = buildRounds(bracket, results, 'mens');
-  const womens = buildRounds(bracket, results, 'womens');
-  return { mens: mens.eliminatedTeams, womens: womens.eliminatedTeams };
+function buildEliminationMaps(bracket,results) {
+  return { mens: buildRounds(bracket,results,'mens').eliminatedTeams, womens: buildRounds(bracket,results,'womens').eliminatedTeams };
 }
-
 
 // ═══════════════════════════════════════════
 //  MAX POSSIBLE SCORES
 // ═══════════════════════════════════════════
-function computeMaxScores(players, teams, bracket, results, winsOfMens, winsOfWomens, elimMaps) {
-  const maxM = Object.fromEntries(players.map(p => [p.player, 0]));
-  const maxW = Object.fromEntries(players.map(p => [p.player, 0]));
-
-  ['mens', 'womens'].forEach(tourn => {
-    const maxMap = tourn === 'mens' ? maxM : maxW;
-    const winsOf = tourn === 'mens' ? winsOfMens : winsOfWomens;
-
-    const tBracket = bracket
-      .filter(b => b.tournament === tourn)
-      .sort((a, b) => parseInt(a.slot) - parseInt(b.slot));
-
-    // Run one simulation per player
-    players.forEach(player => {
-      // Set of teams this player owns in this tournament
-      const myTeams = new Set(
-        teams.filter(t => t.tournament === tourn && t.player === player.player).map(t => t.team)
-      );
-      if (myTeams.size === 0) return;
-
-      let simRound = [];
-      for (let i = 0; i < tBracket.length; i += 2) {
-        simRound.push([tBracket[i] || null, tBracket[i + 1] || null]);
-      }
-
-      const ROUNDS = 6;
-      for (let r = 0; r < ROUNDS; r++) {
-        const nextRound = [];
-        for (const [a, b] of simRound) {
-          if (!a && !b) { nextRound.push(null); continue; }
-          if (!a)       { nextRound.push(b);    continue; }
-          if (!b)       { nextRound.push(a);    continue; }
-
-          const aWins = winsOf[a.team] || 0;
-          const bWins = winsOf[b.team] || 0;
-
-          // Game already played if either team has advanced past this round
-          if (aWins > r || bWins > r) {
-            nextRound.push(aWins >= bWins ? a : b);
-            continue;
-          }
-
-          // Game not yet played — from this player's perspective:
-          // if one of the teams is theirs, it wins
-          // if both are theirs, better seed wins (they earn points either way)
-          // if neither is theirs, pick a arbitrarily (no points either way)
-          const aIsMine = myTeams.has(a.team);
-          const bIsMine = myTeams.has(b.team);
-          const pts = roundPoints(r);
-
-          if (aIsMine && !bIsMine) {
-            nextRound.push(a);
-            maxMap[player.player] += pts;
-          } else if (bIsMine && !aIsMine) {
-            nextRound.push(b);
-            maxMap[player.player] += pts;
-          } else if (aIsMine && bIsMine) {
-            // Two of this player's teams meet — only one can win
-            const aSeed = parseInt(a.seed) || 99;
-            const bSeed = parseInt(b.seed) || 99;
-            nextRound.push(aSeed <= bSeed ? a : b);
-            maxMap[player.player] += pts;
-          } else {
-            // Neither is mine — advance a, no points
-            nextRound.push(a);
-          }
+function computeMaxScores(players,teams,bracket,results,winsOfMens,winsOfWomens) {
+  const maxM=Object.fromEntries(players.map(p=>[p.player,0]));
+  const maxW=Object.fromEntries(players.map(p=>[p.player,0]));
+  ['mens','womens'].forEach(tourn=>{
+    const maxMap=tourn==='mens'?maxM:maxW, winsOf=tourn==='mens'?winsOfMens:winsOfWomens;
+    const tBracket=bracket.filter(b=>b.tournament===tourn).sort((a,b)=>parseInt(a.slot)-parseInt(b.slot));
+    players.forEach(player=>{
+      const myTeams=new Set(teams.filter(t=>t.tournament===tourn&&t.player===player.player).map(t=>t.team));
+      if (!myTeams.size) return;
+      let simRound=[];
+      for (let i=0;i<tBracket.length;i+=2) simRound.push([tBracket[i]||null,tBracket[i+1]||null]);
+      for (let r=0;r<6;r++) {
+        const nextRound=[];
+        for (const [a,b] of simRound) {
+          if (!a&&!b){nextRound.push(null);continue;}
+          if (!a){nextRound.push(b);continue;}
+          if (!b){nextRound.push(a);continue;}
+          const aW=winsOf[a.team]||0,bW=winsOf[b.team]||0;
+          if (aW>r||bW>r){nextRound.push(aW>=bW?a:b);continue;}
+          const aM=myTeams.has(a.team),bM=myTeams.has(b.team),pts=roundPoints(r);
+          if (aM&&!bM){nextRound.push(a);maxMap[player.player]+=pts;}
+          else if (bM&&!aM){nextRound.push(b);maxMap[player.player]+=pts;}
+          else if (aM&&bM){const aS=parseInt(a.seed)||99,bS=parseInt(b.seed)||99;nextRound.push(aS<=bS?a:b);maxMap[player.player]+=pts;}
+          else{nextRound.push(a);}
         }
-
-        const paired = [];
-        for (let i = 0; i < nextRound.length; i += 2) {
-          paired.push([nextRound[i] || null, nextRound[i + 1] || null]);
-        }
-        simRound = paired;
+        const paired=[];
+        for (let i=0;i<nextRound.length;i+=2) paired.push([nextRound[i]||null,nextRound[i+1]||null]);
+        simRound=paired;
       }
     });
   });
-
-  return { maxM, maxW };
+  return {maxM,maxW};
 }
 
 // ═══════════════════════════════════════════
-//  RENDER
+//  TOAST
 // ═══════════════════════════════════════════
-function colorOf(team, tournament, teams, players) {
-  const entry = teams.find(t => t.team === team && t.tournament === tournament);
+function showToast(msg, type='') {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// ═══════════════════════════════════════════
+//  RENDER APP
+// ═══════════════════════════════════════════
+function colorOf(team,tournament,teams,players) {
+  const entry=teams.find(t=>t.team===team&&t.tournament===tournament);
   if (!entry) return null;
-  const p = players.find(p => p.player === entry.player);
-  return p ? p.color : null;
+  const p=players.find(p=>p.player===entry.player);
+  return p?p.color:null;
 }
 
 function renderApp(data) {
-  const { players, teams, results, bracket } = data;
-  const { scores, scoresM, scoresW, teamWins } = computeScores(players, teams, results);
+  const {players,teams,results,bracket}=data;
+  const {scores,scoresM,scoresW,teamWins}=computeScores(players,teams,results);
+  const sortedM=[...players].sort((a,b)=>(scoresM[b.player]||0)-(scoresM[a.player]||0));
+  const sortedW=[...players].sort((a,b)=>(scoresW[b.player]||0)-(scoresW[a.player]||0));
+  const elimMaps=buildEliminationMaps(bracket,results);
+  const winsOfMens={},winsOfWomens={};
+  for (const r of results.filter(r=>r.tournament==='mens')){let w=0;for(let i=1;i<=6;i++)if(r['round'+i]==='1')w++;winsOfMens[r.team]=w;}
+  for (const r of results.filter(r=>r.tournament==='womens')){let w=0;for(let i=1;i<=6;i++)if(r['round'+i]==='1')w++;winsOfWomens[r.team]=w;}
+  const {maxM,maxW}=computeMaxScores(players,teams,bracket,results,winsOfMens,winsOfWomens);
 
-  const sortedM = [...players].sort((a, b) => (scoresM[b.player] || 0) - (scoresM[a.player] || 0));
-  const sortedW = [...players].sort((a, b) => (scoresW[b.player] || 0) - (scoresW[a.player] || 0));
-  const elimMaps = buildEliminationMaps(bracket, results);
+  document.getElementById('yearLabel').textContent=new Date().getFullYear();
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 
-  // Build winsOf maps for both tournaments (needed for max score simulation)
-  const winsOfMens = {};
-  for (const r of results.filter(r => r.tournament === 'mens')) {
-    let w = 0;
-    for (let i = 1; i <= 6; i++) if (r['round' + i] === '1') w++;
-    winsOfMens[r.team] = w;
-  }
-  const winsOfWomens = {};
-  for (const r of results.filter(r => r.tournament === 'womens')) {
-    let w = 0;
-    for (let i = 1; i <= 6; i++) if (r['round' + i] === '1') w++;
-    winsOfWomens[r.team] = w;
-  }
-  const { maxM, maxW } = computeMaxScores(players, teams, bracket, results, winsOfMens, winsOfWomens, elimMaps);
+  const main=document.getElementById('mainContent');
+  main.innerHTML='';
 
-  document.getElementById('yearLabel').textContent = new Date().getFullYear();
-  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-  const main = document.getElementById('mainContent');
-  main.innerHTML = '';
-
-  // ── TABS ──
-  const tabsEl = document.createElement('div');
-  tabsEl.className = 'tabs';
-  const tabDefs = [
-    { id: 'leaderboard',     label: '🏆 Leaderboard' },
-    { id: 'bracket-mens',    label: "Men's Bracket" },
-    { id: 'bracket-womens',  label: "Women's Bracket" },
-    { id: 'rosters',         label: '📋 Rosters' },
-  ];
-  tabDefs.forEach(t => {
-    const btn = document.createElement('button');
-    btn.className = 'tab-btn' + (t.id === 'leaderboard' ? ' active' : '');
-    btn.textContent = t.label;
-    btn.dataset.tab = t.id;
-    btn.onclick = () => switchTab(t.id);
-    tabsEl.appendChild(btn);
+  // TABS
+  const tabsEl=document.createElement('div'); tabsEl.className='tabs';
+  [{id:'leaderboard',label:'🏆 Leaderboard'},{id:'bracket-mens',label:"Men's Bracket"},{id:'bracket-womens',label:"Women's Bracket"},{id:'rosters',label:'📋 Rosters'}].forEach(t=>{
+    const btn=document.createElement('button'); btn.className='tab-btn'; btn.textContent=t.label; btn.dataset.tab=t.id; btn.onclick=()=>switchTab(t.id); tabsEl.appendChild(btn);
   });
-  // Prevent tab bar touch events from scrolling the page body
-  tabsEl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
-  tabsEl.addEventListener('touchmove',  e => e.stopPropagation(), { passive: true });
-  const tabsOuter = document.createElement('div');
-  tabsOuter.className = 'tabs-outer';
-  tabsOuter.appendChild(tabsEl);
-  main.appendChild(tabsOuter);
+  tabsEl.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+  tabsEl.addEventListener('touchmove',e=>e.stopPropagation(),{passive:true});
+  main.appendChild(tabsEl);
 
-  const panels = {};
+  const panels={};
 
-  // ── LEADERBOARD PANEL ──
-  const lbPanel = document.createElement('div');
-  lbPanel.id = 'panel-leaderboard';
+  // LEADERBOARD
+  const lbPanel=document.createElement('div'); lbPanel.id='panel-leaderboard';
 
-  function makeLeaderboardGrid(sortedPlayers, scoreMap, tournLabel, tournColor) {
-    const isCombined = tournLabel === 'Combined Total';
-    const tourn = tournLabel.includes('Men') ? 'mens' : tournLabel.includes('Women') ? 'womens' : null;
+  function buildPopoverTeams(p,isCombined,tourn) {
+    return (isCombined?['mens','womens']:[tourn]).map(t=>{
+      const label=isCombined?`<div class="popover-tourn-label" style="color:${t==='mens'?'var(--mens)':'var(--womens)'}">${t==='mens'?"Men's":"Women's"}</div>`:'';
+      const rows=teams.filter(tm=>tm.player===p.player&&tm.tournament===t).map(tm=>{
+        const wins=teamWins[tm.team+'|'+t]||0, elim=elimMaps[t].has(tm.team);
+        return `<div class="popover-team-row" style="${elim?'opacity:0.35;text-decoration:line-through':''}"><span>${tm.seed?`<span class="roster-seed">${tm.seed}</span>`:''  }${tm.team}</span>${wins?`<span class="wins">${wins}W</span>`:''}</div>`;
+      }).join('');
+      return label+rows;
+    }).join('');
+  }
 
-    const titleEl = document.createElement('div');
-    titleEl.className = 'section-title';
-    titleEl.style.color = tournColor || '';
-    titleEl.textContent = tournLabel;
-
-    const grid = document.createElement('div');
-    grid.className = 'leaderboard';
-
-    sortedPlayers.forEach((p, i) => {
-      const card = document.createElement('div');
-      card.className = 'player-card';
-      card.style.animationDelay = (i * 0.06) + 's';
-      const rankGlow = i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : '';
-      if (rankGlow) card.classList.add(rankGlow);
-      const pts = scoreMap[p.player] || 0;
-      const subtitle = isCombined
-        ? `<div class="player-teams"><span style="color:var(--mens)">${scoresM[p.player]||0}M</span> + <span style="color:var(--womens)">${scoresW[p.player]||0}W</span></div>`
-        : '';
-
-      const maxPts = tourn === 'mens' ? (scoresM[p.player]||0) + (maxM[p.player]||0)
-                  : tourn === 'womens' ? (scoresW[p.player]||0) + (maxW[p.player]||0)
-                  : null;
-      card.innerHTML = `
-        <div class="rank-badge">${i + 1}</div>
+  function makeLeaderboardGrid(sortedPlayers,scoreMap,tournLabel,tournColor) {
+    const isCombined=tournLabel==='Combined Total';
+    const tourn=tournLabel.includes('Men')?'mens':tournLabel.includes('Women')?'womens':null;
+    const titleEl=document.createElement('div'); titleEl.className='section-title'; titleEl.style.color=tournColor||''; titleEl.textContent=tournLabel;
+    const grid=document.createElement('div'); grid.className='leaderboard';
+    sortedPlayers.forEach((p,i)=>{
+      const card=document.createElement('div'); card.className='player-card'; card.style.animationDelay=(i*0.06)+'s';
+      const rg=i===0?'rank-gold':i===1?'rank-silver':i===2?'rank-bronze':''; if(rg)card.classList.add(rg);
+      const pts=scoreMap[p.player]||0;
+      const subtitle=isCombined?`<div class="player-teams"><span style="color:var(--mens)">${scoresM[p.player]||0}M</span> + <span style="color:var(--womens)">${scoresW[p.player]||0}W</span></div>`:'';
+      const maxPts=tourn==='mens'?(scoresM[p.player]||0)+(maxM[p.player]||0):tourn==='womens'?(scoresW[p.player]||0)+(maxW[p.player]||0):null;
+      card.innerHTML=`
+        <div class="rank-badge">${i+1}</div>
         <div class="player-swatch" style="background:${p.color}"></div>
         <div class="player-info">
           <div class="player-name">${p.player}</div>
           ${subtitle}
-          ${maxPts !== null && maxPts > pts ? `<div class="max-score">${maxPts} pts possible</div>` : ''}
+          ${maxPts!==null&&maxPts>pts?`<div class="max-score">↑ ${maxPts} pts possible</div>`:''}
         </div>
-        <div class="player-score">
-          ${pts}
-          <span class="pts-label">PTS</span>
-        </div>
+        <div class="player-score">${pts}<span class="pts-label">PTS</span></div>
         <div class="popover-wrap">
           <button class="info-btn" aria-label="View teams">i</button>
           <div class="popover">
@@ -917,337 +496,266 @@ function renderApp(data) {
               <span style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;display:inline-block"></span>
               <span class="popover-player-name">${p.player}</span>
             </div>
-            ${buildPopoverTeams(p, isCombined, tourn)}
+            ${buildPopoverTeams(p,isCombined,tourn)}
           </div>
         </div>`;
-
-      // Toggle popover on info btn click, close on outside click
-      const infoBtn = card.querySelector('.info-btn');
-      const popover = card.querySelector('.popover');
-      infoBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        // Close all other open popovers
-        document.querySelectorAll('.popover.open').forEach(p => { if (p !== popover) p.classList.remove('open'); });
-        popover.classList.toggle('open');
-      });
-
+      const infoBtn=card.querySelector('.info-btn'), popover=card.querySelector('.popover');
+      infoBtn.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.popover.open').forEach(x=>{if(x!==popover)x.classList.remove('open');});popover.classList.toggle('open');});
       grid.appendChild(card);
     });
-
-    return { titleEl, grid };
+    return {titleEl,grid};
   }
 
-  function buildPopoverTeams(p, isCombined, tourn) {
-    const tournsToShow = isCombined ? ['mens', 'womens'] : [tourn];
-    return tournsToShow.map(t => {
-      const label = isCombined
-        ? `<div class="popover-tourn-label" style="color:${t==='mens'?'var(--mens)':'var(--womens)'}">${t==="mens"?"Men's":"Women's"}</div>`
-        : '';
-      const teamRows = teams
-        .filter(tm => tm.player === p.player && tm.tournament === t)
-        .map(tm => {
-          const wins = teamWins[tm.team + '|' + t] || 0;
-          const elim = elimMaps[t].has(tm.team);
-          const style = elim ? 'opacity:0.35;text-decoration:line-through' : '';
-          return `<div class="popover-team-row" style="${style}"><span>${tm.seed ? `<span class="roster-seed">${tm.seed}</span>` : ''}${tm.team}</span>${wins ? `<span class="wins">${wins}W</span>` : ''}</div>`;
-        }).join('');
-      return label + teamRows;
-    }).join('');
-  }
+  const {titleEl:mTitle,grid:mGrid}=makeLeaderboardGrid(sortedM,scoresM,"Men's Tournament",'var(--mens)');
+  lbPanel.appendChild(mTitle); lbPanel.appendChild(mGrid);
+  const {titleEl:wTitle,grid:wGrid}=makeLeaderboardGrid(sortedW,scoresW,"Women's Tournament",'var(--womens)');
+  wTitle.style.marginTop='36px'; lbPanel.appendChild(wTitle); lbPanel.appendChild(wGrid);
+  panels['leaderboard']=lbPanel; main.appendChild(lbPanel);
 
-
-  const { titleEl: mTitle, grid: mGrid } = makeLeaderboardGrid(sortedM, scoresM, "Men's Tournament", 'var(--mens)');
-  lbPanel.appendChild(mTitle);
-  lbPanel.appendChild(mGrid);
-
-  const { titleEl: wTitle, grid: wGrid } = makeLeaderboardGrid(sortedW, scoresW, "Women's Tournament", 'var(--womens)');
-  wTitle.style.marginTop = '36px';
-  lbPanel.appendChild(wTitle);
-  lbPanel.appendChild(wGrid);
-
-
-
-  panels['leaderboard'] = lbPanel;
-  main.appendChild(lbPanel);
-
-  // ── BRACKET PANELS ──
-  ['mens','womens'].forEach(tourn => {
-    const panel = document.createElement('div');
-    panel.id = `panel-bracket-${tourn}`;
-    panel.style.display = 'none';
-    const label = document.createElement('div');
-    label.className = `bracket-tournament-label ${tourn}`;
-    label.textContent = tourn === 'mens' ? "Men's Tournament" : "Women's Tournament";
-    panel.appendChild(label);
-    panel.appendChild(renderBracket(tourn, data));
-    panels[`bracket-${tourn}`] = panel;
-    main.appendChild(panel);
+  // BRACKET PANELS
+  ['mens','womens'].forEach(tourn=>{
+    const panel=document.createElement('div'); panel.id=`panel-bracket-${tourn}`; panel.style.display='none';
+    const panelHeader=document.createElement('div'); panelHeader.className='bracket-panel-header';
+    const lbl=document.createElement('div'); lbl.className=`bracket-tournament-label ${tourn}`; lbl.textContent=tourn==='mens'?"Men's Tournament":"Women's Tournament";
+    panelHeader.appendChild(lbl);
+    const editBtn=document.createElement('button'); editBtn.className='edit-results-btn'; editBtn.textContent='Edit results';
+    editBtn.onclick=()=>toggleEditMode(tourn,panel,data);
+    panelHeader.appendChild(editBtn); panel.appendChild(panelHeader);
+    const bWrap=document.createElement('div'); bWrap.className='bracket-wrap';
+    bWrap.appendChild(renderBracket(tourn,data,panel)); panel.appendChild(bWrap);
+    panels[`bracket-${tourn}`]=panel; main.appendChild(panel);
   });
 
-  // ── ROSTERS PANEL ──
-  const rostersPanel = document.createElement('div');
-  rostersPanel.id = 'panel-rosters';
-  rostersPanel.style.display = 'none';
-
-  const rosterGrid = document.createElement('div');
-  rosterGrid.className = 'roster-grid';
-
-  // Sort players alphabetically
-  [...players].sort((a, b) => a.player.localeCompare(b.player)).forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'roster-player';
-
-    // Header with name and total points breakdown
-    const header = document.createElement('div');
-    header.className = 'roster-player-name';
-    header.innerHTML = `
-      <span class="dot" style="background:${p.color}"></span>
-      <span>${p.player}</span>
-      <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.68rem">
-        <span style="color:var(--mens)">${scoresM[p.player]||0} pts</span>
-        <span style="color:var(--muted)"> | </span>
-        <span style="color:var(--womens)">${scoresW[p.player]||0} pts</span>
-      </span>`;
-    card.appendChild(header);
-
-    // Mens section
-    const mensLabel = document.createElement('div');
-    mensLabel.style.cssText = 'font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mens);padding:6px 0 2px;font-family:"DM Mono",monospace;';
-    mensLabel.textContent = "Men's";
-    card.appendChild(mensLabel);
-
-    teams.filter(t => t.player === p.player && t.tournament === 'mens').forEach(t => {
-      const wins = teamWins[t.team + '|mens'] || 0;
-      const elim = elimMaps.mens.has(t.team);
-      const row = document.createElement('div');
-      row.className = 'roster-team' + (elim ? ' elim' : '');
-      row.innerHTML = `<span>${t.seed ? `<span class="roster-seed">${t.seed}</span>` : ''}${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
-      card.appendChild(row);
+  // ROSTERS
+  const rostersPanel=document.createElement('div'); rostersPanel.id='panel-rosters'; rostersPanel.style.display='none';
+  const rosterGrid=document.createElement('div'); rosterGrid.className='roster-grid';
+  [...players].sort((a,b)=>a.player.localeCompare(b.player)).forEach(p=>{
+    const card=document.createElement('div'); card.className='roster-player';
+    const hdr=document.createElement('div'); hdr.className='roster-player-name';
+    hdr.innerHTML=`<span class="dot" style="background:${p.color}"></span><span>${p.player}</span><span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.68rem"><span style="color:var(--mens)">${scoresM[p.player]||0} pts</span><span style="color:var(--muted)"> | </span><span style="color:var(--womens)">${scoresW[p.player]||0} pts</span></span>`;
+    card.appendChild(hdr);
+    ['mens','womens'].forEach(t=>{
+      const tl=document.createElement('div'); tl.style.cssText=`font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--${t==='mens'?'mens':'womens'});padding:6px 0 2px;font-family:'DM Mono',monospace;`; tl.textContent=t==='mens'?"Men's":"Women's"; card.appendChild(tl);
+      teams.filter(tm=>tm.player===p.player&&tm.tournament===t).forEach(tm=>{
+        const wins=teamWins[tm.team+'|'+t]||0, elim=elimMaps[t].has(tm.team);
+        const row=document.createElement('div'); row.className='roster-team'+(elim?' elim':'');
+        row.innerHTML=`<span>${tm.seed?`<span class="roster-seed">${tm.seed}</span>`:''}${tm.team}</span>${wins?`<span class="team-wins">${wins}W</span>`:''}`;
+        card.appendChild(row);
+      });
     });
-
-    // Womens section
-    const womensLabel = document.createElement('div');
-    womensLabel.style.cssText = 'font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--womens);padding:6px 0 2px;font-family:"DM Mono",monospace;';
-    womensLabel.textContent = "Women's";
-    card.appendChild(womensLabel);
-
-    teams.filter(t => t.player === p.player && t.tournament === 'womens').forEach(t => {
-      const wins = teamWins[t.team + '|womens'] || 0;
-      const elim = elimMaps.womens.has(t.team);
-      const row = document.createElement('div');
-      row.className = 'roster-team' + (elim ? ' elim' : '');
-      row.innerHTML = `<span>${t.seed ? `<span class="roster-seed">${t.seed}</span>` : ''}${t.team}</span>${wins ? `<span class="team-wins">${wins}W</span>` : ''}`;
-      card.appendChild(row);
-    });
-
     rosterGrid.appendChild(card);
   });
+  rostersPanel.appendChild(rosterGrid); panels['rosters']=rostersPanel; main.appendChild(rostersPanel);
 
-  rostersPanel.appendChild(rosterGrid);
-  panels['rosters'] = rostersPanel;
-  main.appendChild(rostersPanel);
-
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
-  });
-
+  document.addEventListener('click',()=>{ document.querySelectorAll('.popover.open').forEach(p=>p.classList.remove('open')); });
   switchTab(activeTab);
 }
 
-function switchTab(id) {
-  activeTab = id;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
-  document.querySelectorAll('[id^="panel-"]').forEach(el => el.style.display = el.id === 'panel-' + id ? '' : 'none');
+// ═══════════════════════════════════════════
+//  EDIT MODE
+// ═══════════════════════════════════════════
+function toggleEditMode(tourn, panel, data) {
+  editMode[tourn]=!editMode[tourn];
+  pendingPick=null;
+  rebuildBracketContent(tourn, panel, data);
 }
 
-function makeTeamSlot(t, ri, rounds, winsOf, tournament, teams, players, isRight) {
-  const slot = document.createElement('div');
-  if (!t) {
-    slot.className = 'team-slot empty';
-    slot.innerHTML = '<span class="tname">—</span>';
-    return slot;
+function rebuildBracketContent(tourn, panel, data) {
+  const editBtn=panel.querySelector('.edit-results-btn');
+  if (editMode[tourn]) { editBtn.textContent='Done'; editBtn.classList.add('active'); }
+  else { editBtn.textContent='Edit results'; editBtn.classList.remove('active'); }
+  const bWrap=panel.querySelector('.bracket-wrap');
+  bWrap.innerHTML='';
+  bWrap.appendChild(renderBracket(tourn, data, panel));
+}
+
+// ═══════════════════════════════════════════
+//  BRACKET RENDER
+// ═══════════════════════════════════════════
+function makeTeamSlot(t, ri, rounds, winsOf, tournament, teams, players, isRight, data, panel) {
+  const slot=document.createElement('div');
+  if (!t) { slot.className='team-slot empty'; slot.innerHTML='<span class="tname">—</span>'; return slot; }
+
+  const wins=winsOf[t.team]||0;
+  const isWinner=wins>ri&&rounds[ri+1];
+  const color=colorOf(t.team,tournament,teams,players);
+
+  // Find matchup pair for this team at this round
+  const pairInRound=rounds[ri].find(pair=>pair.some(x=>x&&x.team===t.team));
+  const otherInPair=pairInRound?pairInRound.find(x=>x&&x.team!==t.team):null;
+  const otherWins=otherInPair?(winsOf[otherInPair.team]||0):-1;
+  // A team is eliminated only if their opponent has more wins (game was played and they lost)
+  // Only eliminated if opponent has more wins. No opponent yet = game not determined, not eliminated.
+  const isEliminated=otherInPair?otherWins>wins:false;
+  const gameUnplayed=otherInPair&&wins===otherWins&&wins<=ri;
+  const gameIsPlayed=otherInPair&&(wins>ri||otherWins>ri);
+
+  const isPending=pendingPick&&pendingPick.tournament===tournament&&pendingPick.roundIndex===ri&&pendingPick.team===t.team;
+  const isPendingOther=pendingPick&&pendingPick.tournament===tournament&&pendingPick.roundIndex===ri&&pendingPick.team!==t.team;
+
+  let classes='team-slot';
+  if (color) classes+=' has-owner';
+  if (isWinner) classes+=' winner';
+  if (isEliminated) classes+=' eliminated';
+  if (editMode[tournament]) {
+    if (isPending) classes+=' pending-confirm';
+    else if (isPendingOther) classes+=' pending-other';
+    else if (gameUnplayed) classes+=' tappable';
+    else if (gameIsPlayed&&isEliminated&&otherInPair) classes+=' reversible';
   }
-  const wins = winsOf[t.team] || 0;
-  const nextRound = rounds[ri + 1];
-  const color = colorOf(t.team, tournament, teams, players);
-  slot.className = 'team-slot' +
-    (color ? ' has-owner' : '') +
-    (wins <= ri && ri > 0 ? ' eliminated' : '') +
-    (wins > ri && nextRound ? ' winner' : '');
-  if (color) {
-    if (isRight) slot.style.borderRightColor = color;
-    else slot.style.borderLeftColor = color;
+  slot.className=classes;
+  if (color) { if(isRight) slot.style.borderRightColor=color; else slot.style.borderLeftColor=color; }
+  const owner=teams.find(x=>x.team===t.team&&x.tournament===tournament);
+  slot.setAttribute('data-tip',owner?owner.player:'');
+  slot.innerHTML=`<span class="seed">${t.seed||''}</span><span class="tname">${t.team}</span>`;
+
+  if (editMode[tournament]) {
+    if (isPending) {
+      const btns=document.createElement('div'); btns.className='slot-confirm-btns';
+      const confirmBtn=document.createElement('button'); confirmBtn.className='btn-confirm';
+      confirmBtn.textContent=pendingPick.isReverse?'Reverse':'Confirm';
+      confirmBtn.onclick=async(e)=>{ e.stopPropagation(); await submitResult(pendingPick,data,panel); };
+      const cancelBtn=document.createElement('button'); cancelBtn.className='btn-cancel'; cancelBtn.textContent='Cancel';
+      cancelBtn.onclick=(e)=>{ e.stopPropagation(); pendingPick=null; rebuildBracketContent(tournament,panel,data); };
+      btns.appendChild(confirmBtn); btns.appendChild(cancelBtn); slot.appendChild(btns);
+    } else if (gameUnplayed||(gameIsPlayed&&isEliminated&&otherInPair)) {
+      slot.onclick=(e)=>{
+        e.stopPropagation();
+        pendingPick={ tournament, roundIndex:ri, team:t.team, isReverse:gameIsPlayed&&isEliminated, otherTeam:otherInPair?.team };
+        rebuildBracketContent(tournament,panel,data);
+      };
+    }
   }
-  const owner = teams.find(x => x.team === t.team && x.tournament === tournament);
-  slot.setAttribute('data-tip', owner ? owner.player : '');
-  slot.innerHTML = `<span class="seed">${t.seed || ''}</span><span class="tname">${t.team}</span>`;
   return slot;
 }
 
-function makeBracketHalf(rounds, halfMatchups, isRight, tournament, teams, players, winsOf) {
-  // halfMatchups[ri] = matchups for this half in round ri
-  const half = document.createElement('div');
-  half.className = 'bracket-half' + (isRight ? ' right' : '');
+async function submitResult(pick, data, panel) {
+  const {tournament,roundIndex,team,isReverse,otherTeam}=pick;
+  const roundName=ROUND_NAMES[roundIndex];
+  const sheetTab=tournament==='mens'?'Mens Responses':'Womens Responses';
+  pendingPick=null;
+  try {
+    if (isReverse) { showToast('Reversing result…'); await deleteLastMatchingRow(sheetTab,otherTeam,roundName); }
+    await appendRow(sheetTab,[new Date().toISOString(),roundName,team]);
+    showToast(`${team} recorded`,   'success');
+    const newData=await loadData();
+    renderApp(newData);
+  } catch(err) {
+    const msg=err.message;
+    showToast(msg.includes('invalid_grant')||msg.includes('unauthorized')||msg.includes('403')
+      ?'Not authorized — make sure you have edit access to the sheet'
+      :`Error: ${msg}`,'error');
+    rebuildBracketContent(tournament,panel,data);
+  }
+}
 
-  for (let ri = 0; ri < rounds.length - 1; ri++) { // exclude championship (last round)
-    const col = document.createElement('div');
-    col.className = 'bracket-round';
-    const slots = document.createElement('div');
-    slots.className = 'bracket-slots';
-    (halfMatchups[ri] || []).forEach(pair => {
-      const mu = document.createElement('div');
-      mu.className = 'matchup';
-      const pairTeams = Array.isArray(pair) ? pair : (pair ? [pair] : []);
-      for (let si = 0; si < 2; si++) {
-        mu.appendChild(makeTeamSlot(pairTeams[si], ri, rounds, winsOf, tournament, teams, players, isRight));
-      }
+function makeBracketHalf(rounds,halfMatchups,isRight,tournament,teams,players,winsOf,data,panel) {
+  const half=document.createElement('div'); half.className='bracket-half'+(isRight?' right':'');
+  for (let ri=0;ri<rounds.length-1;ri++) {
+    const col=document.createElement('div'); col.className='bracket-round';
+    const slots=document.createElement('div'); slots.className='bracket-slots';
+    (halfMatchups[ri]||[]).forEach(pair=>{
+      const mu=document.createElement('div'); mu.className='matchup';
+      const pt=Array.isArray(pair)?pair:(pair?[pair]:[]);
+      for (let si=0;si<2;si++) mu.appendChild(makeTeamSlot(pt[si],ri,rounds,winsOf,tournament,teams,players,isRight,data,panel));
       slots.appendChild(mu);
     });
-    col.appendChild(slots);
-    half.appendChild(col);
+    col.appendChild(slots); half.appendChild(col);
   }
   return half;
 }
 
-function renderBracket(tournament, { teams, results, bracket, players }) {
-  const { rounds, winsOf } = buildRounds(bracket, results, tournament);
+function renderBracket(tournament, data, panel) {
+  const {teams,results,bracket,players}=data;
+  const {rounds,winsOf}=buildRounds(bracket,results,tournament);
+  const container=document.createElement('div'); container.className='bracket-container';
 
-  const container = document.createElement('div');
-  container.className = 'bracket-container';
-
-  // ── Header row ──
-  const headers = document.createElement('div');
-  headers.className = 'bracket-headers';
-
-  const leftHeaders = document.createElement('div');
-  leftHeaders.className = 'half-headers';
-  const rightHeaders = document.createElement('div');
-  rightHeaders.className = 'half-headers right';
-  const champHeader = document.createElement('div');
-  champHeader.className = 'champ-header';
-
-  for (let ri = 0; ri < rounds.length - 1; ri++) {
-    const lh = document.createElement('div');
-    lh.className = 'round-label';
-    lh.textContent = ROUND_NAMES[ri];
-    leftHeaders.appendChild(lh);
-
-    const rh = document.createElement('div');
-    rh.className = 'round-label';
-    rh.textContent = ROUND_NAMES[ri];
-    rightHeaders.appendChild(rh);
-  }
-  headers.appendChild(leftHeaders);
-  headers.appendChild(champHeader);
-  headers.appendChild(rightHeaders);
-  container.appendChild(headers);
-
-  // ── Split matchups into left (slots 1-32) and right (slots 33-64) ──
-  // rounds[0] has 32 matchups total; left = first 16, right = last 16
-  const leftHalf = {};
-  const rightHalf = {};
-
-  for (let ri = 0; ri < rounds.length - 1; ri++) {
-    const all = rounds[ri];
-    const half = Math.ceil(all.length / 2);
-    leftHalf[ri]  = all.slice(0, half);
-    rightHalf[ri] = all.slice(half);
+  // Edit banner
+  if (editMode[tournament]) {
+    const banner=document.createElement('div'); banner.className='edit-banner';
+    banner.innerHTML=`<span class="banner-msg">Editing results</span><span class="banner-sub">Tap the winning team · Tap a losing team to reverse a result</span>`;
+    const doneBtn=document.createElement('button'); doneBtn.className='edit-done-btn'; doneBtn.textContent='Done';
+    doneBtn.onclick=()=>toggleEditMode(tournament,panel,data);
+    banner.appendChild(doneBtn); container.appendChild(banner);
   }
 
-  // ── Championship column ──
-  const champCol = document.createElement('div');
-  champCol.className = 'bracket-champ';
+  // Round headers
+  const headers=document.createElement('div'); headers.className='bracket-headers';
+  const lh=document.createElement('div'); lh.className='half-headers';
+  const rh=document.createElement('div'); rh.className='half-headers right';
+  const ch=document.createElement('div'); ch.className='champ-header';
+  for (let ri=0;ri<rounds.length-1;ri++) {
+    const l=document.createElement('div');l.className='round-label';l.textContent=ROUND_NAMES[ri];lh.appendChild(l);
+    const r=document.createElement('div');r.className='round-label';r.textContent=ROUND_NAMES[ri];rh.appendChild(r);
+  }
+  headers.appendChild(lh); headers.appendChild(ch); headers.appendChild(rh); container.appendChild(headers);
 
-  const champRound = rounds[rounds.length - 1]; // [[finalist1, finalist2]]
-  const champMatchup = champRound[0] || [];
-  const champLabel = document.createElement('div');
-  champLabel.className = 'champ-label';
-  champLabel.textContent = 'Championship';
-  champCol.appendChild(champLabel);
+  // Split halves
+  const leftHalf={},rightHalf={};
+  for (let ri=0;ri<rounds.length-1;ri++){const all=rounds[ri],half=Math.ceil(all.length/2);leftHalf[ri]=all.slice(0,half);rightHalf[ri]=all.slice(half);}
 
-  // finalist from left (top)
-  const leftFinalist = champMatchup[0] || null;
-  const rightFinalist = champMatchup[1] || null;
+  // Championship
+  const champCol=document.createElement('div'); champCol.className='bracket-champ';
+  const champMatchup=(rounds[rounds.length-1][0])||[];
+  const cl=document.createElement('div'); cl.className='champ-label'; cl.textContent='Championship'; champCol.appendChild(cl);
+  [champMatchup[0]||null,champMatchup[1]||null].forEach(t=>champCol.appendChild(makeTeamSlot(t,rounds.length-1,rounds,winsOf,tournament,teams,players,false,data,panel)));
 
-  [leftFinalist, rightFinalist].forEach((t, i) => {
-    champCol.appendChild(makeTeamSlot(t, rounds.length - 1, rounds, winsOf, tournament, teams, players, false));
-  });
-
-  // ── Full bracket layout ──
-  const bracketFull = document.createElement('div');
-  bracketFull.className = 'bracket-full';
-
-  bracketFull.appendChild(makeBracketHalf(rounds, leftHalf, false, tournament, teams, players, winsOf));
-  bracketFull.appendChild(champCol);
-  bracketFull.appendChild(makeBracketHalf(rounds, rightHalf, true, tournament, teams, players, winsOf));
-
-  container.appendChild(bracketFull);
+  const bf=document.createElement('div'); bf.className='bracket-full';
+  bf.appendChild(makeBracketHalf(rounds,leftHalf,false,tournament,teams,players,winsOf,data,panel));
+  bf.appendChild(champCol);
+  bf.appendChild(makeBracketHalf(rounds,rightHalf,true,tournament,teams,players,winsOf,data,panel));
+  container.appendChild(bf);
   return container;
 }
 
 // ═══════════════════════════════════════════
-//  CONFIG GATE
+//  TAB SWITCHING
 // ═══════════════════════════════════════════
-function showConfigPanel() {
-  const main = document.getElementById('mainContent');
-  main.innerHTML = `<div style="max-width:480px;margin:0 auto;padding:20px">
-    <h2>Setup Required</h2>
-    <p>Enter your Google Sheet ID and API key. These are saved in your browser.</p>
-    <div><label>Google Sheet ID<br><input id="cfgSheetId" type="text" style="width:100%;padding:8px;margin:4px 0 12px" value="${CONFIG.SHEET_ID !== 'YOUR_SHEET_ID_HERE' ? CONFIG.SHEET_ID : ''}"></label></div>
-    <div><label>API Key<br><input id="cfgApiKey" type="text" style="width:100%;padding:8px;margin:4px 0 12px" value="${CONFIG.API_KEY !== 'YOUR_API_KEY_HERE' ? CONFIG.API_KEY : ''}"></label></div>
-    <button onclick="saveConfig()">Connect Sheet</button>
-    <p style="font-size:0.85rem;margin-top:16px">
-      Sheet ID: the long string in docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit<br>
-      API key: console.cloud.google.com → Credentials<br>
-      Make sure sheet is shared as "Anyone with link".
-    </p>
-  </div>`;
+function switchTab(id) {
+  activeTab=id;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  document.querySelectorAll('[id^="panel-"]').forEach(el=>el.style.display=el.id==='panel-'+id?'':'none');
 }
 
+// ═══════════════════════════════════════════
+//  CONFIG PANEL
+// ═══════════════════════════════════════════
+function showConfigPanel() {
+  const main=document.getElementById('mainContent');
+  main.innerHTML=`<div style="max-width:480px;margin:0 auto;padding:20px">
+    <h2>Setup Required</h2>
+    <p>Enter your Google Sheet ID and API key.</p>
+    <div><label>Google Sheet ID<br><input id="cfgSheetId" type="text" style="width:100%;padding:8px;margin:4px 0 12px" value="${CONFIG.SHEET_ID!=='YOUR_SHEET_ID_HERE'?CONFIG.SHEET_ID:''}"></label></div>
+    <div><label>API Key<br><input id="cfgApiKey" type="text" style="width:100%;padding:8px;margin:4px 0 12px" value="${CONFIG.API_KEY!=='YOUR_API_KEY_HERE'?CONFIG.API_KEY:''}"></label></div>
+    <button onclick="saveConfig()">Connect Sheet</button>
+  </div>`;
+}
 function saveConfig() {
-  const id  = document.getElementById('cfgSheetId').value.trim();
-  const key = document.getElementById('cfgApiKey').value.trim();
-  if (!id || !key) return alert('Please fill in both fields.');
-  localStorage.setItem('mm_sheet_id', id);
-  localStorage.setItem('mm_api_key', key);
-  CONFIG.SHEET_ID = id;
-  CONFIG.API_KEY  = key;
-  init();
+  const id=document.getElementById('cfgSheetId').value.trim(), key=document.getElementById('cfgApiKey').value.trim();
+  if (!id||!key) return alert('Please fill in both fields.');
+  localStorage.setItem('mm_sheet_id',id); localStorage.setItem('mm_api_key',key);
+  CONFIG.SHEET_ID=id; CONFIG.API_KEY=key; init();
 }
 
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
-let activeTab = 'leaderboard';
-let refreshTimer = null;
-
 async function silentRefresh() {
-  try {
-    const data = await loadData();
-    renderApp(data);
-  } catch (_) {
-    // Silently fail on background refresh — don't disrupt the user
-  }
+  if (editMode.mens||editMode.womens) return;
+  try { const data=await loadData(); renderApp(data); } catch(_) {}
 }
-
-function scheduleRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(silentRefresh, 60000);
-}
+function scheduleRefresh() { if(refreshTimer)clearInterval(refreshTimer); refreshTimer=setInterval(silentRefresh,60000); }
 
 async function init() {
-  if (CONFIG.SHEET_ID === 'YOUR_SHEET_ID_HERE' || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
-    showConfigPanel();
-    return;
-  }
-  const main = document.getElementById('mainContent');
-  main.innerHTML = '<div class="status-msg"><div class="spinner"></div>Loading bracket data…</div>';
+  if (CONFIG.SHEET_ID==='YOUR_SHEET_ID_HERE'||CONFIG.API_KEY==='YOUR_API_KEY_HERE') { showConfigPanel(); return; }
+  const main=document.getElementById('mainContent');
+  main.innerHTML='<div class="status-msg"><div class="spinner"></div>Loading bracket data…</div>';
   try {
-    const data = await loadData();
+    const data=await loadData();
     renderApp(data);
     scheduleRefresh();
-  } catch (e) {
-    main.innerHTML = `<div class="status-msg">
+  } catch(e) {
+    main.innerHTML=`<div class="status-msg">
       <div style="color:#ff6b35;font-weight:600">Failed to load data</div>
       <div style="font-size:0.85rem;margin:12px 0">${e.message}</div>
       <button onclick="showConfigPanel()">Update Settings</button>
@@ -1256,7 +764,7 @@ async function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
