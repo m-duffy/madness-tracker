@@ -197,6 +197,7 @@ let refreshTimer = null;
 let editMode     = { mens: false, womens: false };
 let pendingPick  = null;  // { tournament, roundIndex, team, isReverse, otherTeam }
 let oauthToken   = null;  // held in memory only, never persisted
+let isFirstLoad  = true;
 
 // ═══════════════════════════════════════════
 //  OAUTH
@@ -502,7 +503,8 @@ function renderApp(data) {
     const titleEl=document.createElement('div'); titleEl.className='section-title'; titleEl.style.color=tournColor||''; titleEl.textContent=tournLabel;
     const grid=document.createElement('div'); grid.className='leaderboard';
     sortedPlayers.forEach((p,i)=>{
-      const card=document.createElement('div'); card.className='player-card'; card.style.animationDelay=(i*0.06)+'s';
+      const card=document.createElement('div'); card.className='player-card';
+      if (isFirstLoad) card.style.animationDelay=(i*0.06)+'s'; else card.style.animation='none';
       const rg=i===0?'rank-gold':i===1?'rank-silver':i===2?'rank-bronze':''; if(rg)card.classList.add(rg);
       const pts=scoreMap[p.player]||0;
       const subtitle=isCombined?`<div class="player-teams"><span style="color:var(--mens)">${scoresM[p.player]||0}M</span> + <span style="color:var(--womens)">${scoresW[p.player]||0}W</span></div>`:'';
@@ -776,7 +778,11 @@ async function silentRefresh() {
   if (editMode.mens||editMode.womens) return;
   try { const data=await loadData(); renderApp(data); } catch(_) {}
 }
-function scheduleRefresh() { if(refreshTimer)clearInterval(refreshTimer); refreshTimer=setInterval(silentRefresh,60000); }
+function scheduleRefresh() {
+  isFirstLoad = false;
+  if(refreshTimer)clearInterval(refreshTimer);
+  refreshTimer=setInterval(silentRefresh,60000);
+}
 
 async function init() {
   if (CONFIG.SHEET_ID==='YOUR_SHEET_ID_HERE'||CONFIG.API_KEY==='YOUR_API_KEY_HERE') { showConfigPanel(); return; }
