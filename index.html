@@ -578,13 +578,15 @@ function makeTeamSlot(t, ri, rounds, winsOf, tournament, teams, players, isRight
 
   const wins=winsOf[t.team]||0;
   const isWinner=wins>ri&&rounds[ri+1];
-  const isEliminated=wins<=ri&&ri>0;
   const color=colorOf(t.team,tournament,teams,players);
 
   // Find matchup pair for this team at this round
   const pairInRound=rounds[ri].find(pair=>pair.some(x=>x&&x.team===t.team));
   const otherInPair=pairInRound?pairInRound.find(x=>x&&x.team!==t.team):null;
   const otherWins=otherInPair?(winsOf[otherInPair.team]||0):-1;
+  // A team is eliminated only if their opponent has more wins (game was played and they lost)
+  // Only eliminated if opponent has more wins. No opponent yet = game not determined, not eliminated.
+  const isEliminated=otherInPair?otherWins>wins:false;
   const gameUnplayed=otherInPair&&wins===otherWins&&wins<=ri;
   const gameIsPlayed=otherInPair&&(wins>ri||otherWins>ri);
 
@@ -749,11 +751,11 @@ async function init() {
   const main=document.getElementById('mainContent');
   main.innerHTML='<div class="status-msg"><div class="spinner"></div>Loading bracket data…</div>';
   try {
-    const data = await loadData();
+    const data=await loadData();
     renderApp(data);
     scheduleRefresh();
-  } catch (e) {
-    main.innerHTML = `<div class="status-msg">
+  } catch(e) {
+    main.innerHTML=`<div class="status-msg">
       <div style="color:#ff6b35;font-weight:600">Failed to load data</div>
       <div style="font-size:0.85rem;margin:12px 0">${e.message}</div>
       <button onclick="showConfigPanel()">Update Settings</button>
@@ -762,7 +764,7 @@ async function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
