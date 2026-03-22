@@ -418,6 +418,32 @@ function showToast(msg, type='') {
 }
 
 // ═══════════════════════════════════════════
+//  BRACKET SCROLL HELPERS
+// ═══════════════════════════════════════════
+function saveBracketScrolls() {
+  const scrolls = {};
+  ['mens','womens'].forEach(t => {
+    const panel = document.getElementById(`panel-bracket-${t}`);
+    if (panel) {
+      const bc = panel.querySelector('.bracket-container');
+      if (bc) scrolls[t] = { left: bc.scrollLeft, top: bc.scrollTop };
+    }
+  });
+  return scrolls;
+}
+
+function restoreBracketScrolls(scrolls) {
+  ['mens','womens'].forEach(t => {
+    if (!scrolls[t]) return;
+    const panel = document.getElementById(`panel-bracket-${t}`);
+    if (panel) {
+      const bc = panel.querySelector('.bracket-container');
+      if (bc) { bc.scrollLeft = scrolls[t].left; bc.scrollTop = scrolls[t].top; }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
 //  RENDER APP
 // ═══════════════════════════════════════════
 function colorOf(team,tournament,teams,players) {
@@ -442,6 +468,7 @@ function renderApp(data) {
   document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 
   const main=document.getElementById('mainContent');
+  const savedScrolls = saveBracketScrolls();
   main.innerHTML='';
 
   // TABS
@@ -549,6 +576,7 @@ function renderApp(data) {
 
   document.addEventListener('click',()=>{ document.querySelectorAll('.popover.open').forEach(p=>p.classList.remove('open')); });
   switchTab(activeTab);
+  restoreBracketScrolls(savedScrolls);
 }
 
 // ═══════════════════════════════════════════
@@ -565,8 +593,12 @@ function rebuildBracketContent(tourn, panel, data) {
   if (editMode[tourn]) { editBtn.textContent='Done'; editBtn.classList.add('active'); }
   else { editBtn.textContent='Edit results'; editBtn.classList.remove('active'); }
   const bWrap=panel.querySelector('.bracket-wrap');
+  // Preserve scroll position of the bracket container so confirm dialogs
+  // don't snap the user back to the top-left
+  const savedScrolls = saveBracketScrolls();
   bWrap.innerHTML='';
   bWrap.appendChild(renderBracket(tourn, data, panel));
+  restoreBracketScrolls(savedScrolls);
 }
 
 // ═══════════════════════════════════════════
